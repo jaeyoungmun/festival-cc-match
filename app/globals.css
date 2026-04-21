@@ -1,26 +1,127 @@
-@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&family=Noto+Sans+KR:wght@400;500;600&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* ================================================
+   테마 변수 — data-theme 속성 하나로 전체 앱 변경
+   layout.tsx의 <html data-theme="light"> 만 바꾸면 됨
+   옵션: "light" | "dark" | "festival"
+   ================================================ */
+
+[data-theme="light"] {
+  --bg-page:        #ffffff;
+  --bg-card:        #f9f9f7;
+  --bg-card-hover:  #f2f1ee;
+  --bg-badge:       #f3f2ef;
+  --border:         #e8e7e3;
+  --border-accent:  #d4d2cc;
+  --text-primary:   #1a1a18;
+  --text-secondary: #6b6a66;
+  --text-muted:     #a8a7a3;
+  --accent-from:    #e8545a;
+  --accent-to:      #c2396e;
+  --accent-text:    #ffffff;
+  --accent-soft:    rgba(232, 84, 90, 0.08);
+  --accent-glow:    rgba(232, 84, 90, 0.15);
+  --shadow-card:    0 2px 16px rgba(0,0,0,0.06), 0 1px 4px rgba(0,0,0,0.04);
+  --shadow-btn:     0 4px 16px rgba(232, 84, 90, 0.25);
+  --deco-opacity:   0.06;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+[data-theme="dark"] {
+  --bg-page:        #0f0f0e;
+  --bg-card:        #1a1a18;
+  --bg-card-hover:  #222220;
+  --bg-badge:       #242422;
+  --border:         #2a2a28;
+  --border-accent:  #3a3a38;
+  --text-primary:   #eeecea;
+  --text-secondary: #8a8a86;
+  --text-muted:     #5a5a58;
+  --accent-from:    #f472b6;
+  --accent-to:      #a855f7;
+  --accent-text:    #ffffff;
+  --accent-soft:    rgba(244, 114, 182, 0.08);
+  --accent-glow:    rgba(244, 114, 182, 0.12);
+  --shadow-card:    0 2px 24px rgba(0,0,0,0.4);
+  --shadow-btn:     0 4px 20px rgba(168, 85, 247, 0.3);
+  --deco-opacity:   0.12;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+[data-theme="festival"] {
+  --bg-page:        #fdf4ff;
+  --bg-card:        rgba(255,255,255,0.75);
+  --bg-card-hover:  rgba(255,255,255,0.9);
+  --bg-badge:       rgba(244,114,182,0.08);
+  --border:         rgba(244,114,182,0.15);
+  --border-accent:  rgba(168,85,247,0.25);
+  --text-primary:   #2d1a3d;
+  --text-secondary: #7c5c8a;
+  --text-muted:     #b49cc0;
+  --accent-from:    #f472b6;
+  --accent-to:      #a855f7;
+  --accent-text:    #ffffff;
+  --accent-soft:    rgba(244, 114, 182, 0.1);
+  --accent-glow:    rgba(168, 85, 247, 0.2);
+  --shadow-card:    0 8px 32px rgba(168,85,247,0.12), 0 2px 8px rgba(244,114,182,0.08);
+  --shadow-btn:     0 4px 20px rgba(168, 85, 247, 0.35);
+  --deco-opacity:   0.18;
 }
+
+/* ================================================
+   전역 기본값
+   ================================================ */
+* { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--bg-page);
+  color: var(--text-primary);
+  font-family: 'Noto Sans KR', sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  -webkit-font-smoothing: antialiased;
 }
+
+/* 공통 유틸 클래스 */
+.t-page    { background-color: var(--bg-page); }
+.t-card    { background-color: var(--bg-card); border: 1px solid var(--border); }
+.t-text    { color: var(--text-primary); }
+.t-sub     { color: var(--text-secondary); }
+.t-muted   { color: var(--text-muted); }
+.t-border  { border-color: var(--border); }
+.t-badge   { background-color: var(--bg-badge); }
+
+.t-accent-bg {
+  background: linear-gradient(135deg, var(--accent-from), var(--accent-to));
+}
+.t-accent-text {
+  background: linear-gradient(135deg, var(--accent-from), var(--accent-to));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.t-accent-border { border-color: var(--border-accent); }
+.t-btn-shadow    { box-shadow: var(--shadow-btn); }
+.t-card-shadow   { box-shadow: var(--shadow-card); }
+
+/* 플로팅 이모지 애니메이션 */
+@keyframes float-up {
+  0%   { transform: translateY(0px) rotate(0deg);   opacity: var(--deco-opacity); }
+  50%  { transform: translateY(-20px) rotate(8deg); opacity: calc(var(--deco-opacity) * 1.5); }
+  100% { transform: translateY(0px) rotate(0deg);   opacity: var(--deco-opacity); }
+}
+.floating-emoji {
+  animation: float-up var(--dur, 8s) ease-in-out infinite;
+  animation-delay: var(--delay, 0s);
+}
+
+/* 페이드인 */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.anim-fade-up { animation: fade-up 0.5s cubic-bezier(0.16,1,0.3,1) both; }
+.anim-delay-1 { animation-delay: 0.1s; }
+.anim-delay-2 { animation-delay: 0.2s; }
+.anim-delay-3 { animation-delay: 0.32s; }
+.anim-delay-4 { animation-delay: 0.44s; }

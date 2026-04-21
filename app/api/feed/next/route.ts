@@ -33,13 +33,13 @@ export async function GET() {
 
   const profile = data[0];
 
-  // 4. seen_users에 기록 (중복은 upsert로 무시)
-  await supabase
-    .from("seen_users")
-    .upsert(
-      { viewer_id: user.id, target_id: profile.id },
-      { onConflict: "viewer_id,target_id" },
-    );
+  // // 4. seen_users에 기록 (중복은 upsert로 무시)
+  // await supabase
+  //   .from("seen_users")
+  //   .upsert(
+  //     { viewer_id: user.id, target_id: profile.id },
+  //     { onConflict: "viewer_id,target_id" },
+  //   );
 
   return NextResponse.json({ profile });
 }

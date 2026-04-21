@@ -35,10 +35,10 @@ export async function middleware(request: NextRequest) {
     (p) => pathname === p || pathname.startsWith(p + "/"),
   );
 
-  // 미인증 유저가 보호 경로 접근 → 가입 페이지로
-  //   if (!user && !isPublic) {
-  //     return NextResponse.redirect(new URL("/auth/signup", request.url));
-  //   }
+  // //   미인증 유저가 보호 경로 접근 → 가입 페이지로
+  //     if (!user && !isPublic) {
+  //       return NextResponse.redirect(new URL("/auth/signup", request.url));
+  //     }
 
   // 인증된 유저가 auth 페이지 재접근 → 피드로
   if (user && pathname.startsWith("/auth/")) {
