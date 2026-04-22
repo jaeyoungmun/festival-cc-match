@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "축제 인연 찾기",
-  description: "축제에서 이성의 인스타를 만나보세요",
+  title: "CC-Campus Connection",
+  description: "축제에서 스친 인연, 다시 볼 수 있을지 궁금하다면?",
 };
 
 export default function RootLayout({

@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 
 // POST /api/auth/send-code
 // Body: { email: string }
-// Supabase Auth OTP 이메일 발송
+// Magic Link 이메일 발송
 export async function POST(request: NextRequest) {
   const body = await request.json().catch(() => null);
   const { email } = body ?? {};
@@ -12,11 +12,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "이메일이 필요합니다" }, { status: 400 });
   }
 
-  // 학교 이메일 형식 검증 (.kr 또는 .edu 도메인)
-  const schoolEmail = /^[^\s@]+@[^\s@]+\.(kr|edu)$/i;
-  if (!schoolEmail.test(email)) {
+  // 학교 이메일 형식 검증
+  const isSchoolEmail = /^[a-zA-Z0-9._%+-]+@sangmyung\.kr$/i.test(email);
+  if (!isSchoolEmail) {
     return NextResponse.json(
-      { error: "학교 이메일(.kr 또는 .edu)만 사용 가능합니다" },
+      { error: "학교 이메일(sangmyung.kr)만 사용 가능합니다" },
       { status: 400 },
     );
   }
@@ -27,6 +27,8 @@ export async function POST(request: NextRequest) {
     email,
     options: {
       shouldCreateUser: true,
+      // Magic Link 클릭 시 리다이렉트될 주소
+      emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`,
     },
   });
 

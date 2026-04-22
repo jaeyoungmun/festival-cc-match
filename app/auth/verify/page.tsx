@@ -1,63 +1,19 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { Button } from '@/components/ui/button'
-import { Suspense } from 'react'
 
 function VerifyForm() {
   const router = useRouter()
-  const searchParams = useSearchParams()
-  const email = searchParams.get('email') ?? ''
-
-  const [code, setCode] = useState(['', '', '', '', '', ''])
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
+  const email = useSearchParams().get('email') ?? ''
   const [resendCool, setResendCool] = useState(60)
-  const inputRefs = useRef<(HTMLInputElement | null)[]>([])
+  const [resendDone, setResendDone] = useState(false)
 
-  // 재전송 쿨다운 타이머
   useEffect(() => {
     if (resendCool <= 0) return
     const t = setTimeout(() => setResendCool(c => c - 1), 1000)
     return () => clearTimeout(t)
   }, [resendCool])
-
-  function handleInput(idx: number, val: string) {
-    if (!/^\d*$/.test(val)) return
-    const next = [...code]
-    next[idx] = val.slice(-1)
-    setCode(next)
-    if (val && idx < 5) inputRefs.current[idx + 1]?.focus()
-  }
-
-  function handleKeyDown(idx: number, e: React.KeyboardEvent) {
-    if (e.key === 'Backspace' && !code[idx] && idx > 0) {
-      inputRefs.current[idx - 1]?.focus()
-    }
-  }
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    const fullCode = code.join('')
-    if (fullCode.length < 6) { setError('6자리를 모두 입력해주세요'); return }
-
-    setLoading(true)
-    setError('')
-
-    const res = await fetch('/api/auth/verify-code', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, token: fullCode }),
-    })
-
-    const data = await res.json()
-    setLoading(false)
-
-    if (!res.ok) { setError(data.error ?? '코드가 올바르지 않습니다'); return }
-
-    router.push('/auth/profile')
-  }
 
   async function handleResend() {
     if (resendCool > 0) return
@@ -67,98 +23,65 @@ function VerifyForm() {
       body: JSON.stringify({ email }),
     })
     setResendCool(60)
+    setResendDone(true)
   }
 
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center px-6"
-      style={{ background: 'linear-gradient(135deg, #fdf4ff 0%, #fce7f3 50%, #ede9fe 100%)' }}>
+    <main className="min-h-screen t-page flex flex-col items-center justify-center px-6 relative overflow-hidden">
+      <div className="fixed inset-0 pointer-events-none"
+        style={{ background: 'radial-gradient(ellipse at 50% 20%, var(--accent-glow), transparent 65%)' }} />
 
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-20 -left-20 w-72 h-72 rounded-full opacity-20"
-          style={{ background: 'radial-gradient(circle, #f472b6, transparent)' }} />
-        <div className="absolute -bottom-20 -right-20 w-96 h-96 rounded-full opacity-20"
-          style={{ background: 'radial-gradient(circle, #a855f7, transparent)' }} />
-      </div>
+      <div className="relative w-full text-center" style={{ maxWidth: 360 }}>
 
-      <div className="relative w-full max-w-sm">
-        <div className="text-center mb-10">
-          <div className="text-5xl mb-4">📬</div>
-          <h1 className="text-3xl font-bold mb-2"
-            style={{
-              fontFamily: "'Gaegu', cursive",
-              background: 'linear-gradient(135deg, #ec4899, #a855f7)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-            }}>
-            코드 확인
+        {/* 아이콘 애니메이션 */}
+        <div className="anim-fade-up mb-8">
+          <div className="text-6xl mb-4" style={{ animation: 'float-up 3s ease-in-out infinite' }}>📨</div>
+          <h1 className="font-bold t-accent-text mb-2"
+            style={{ fontFamily: "'Gaegu', cursive", fontSize: '1.9rem' }}>
+            이메일을 확인해주세요
           </h1>
-          <p className="text-sm text-gray-500" style={{ fontFamily: "'Noto Sans KR', sans-serif" }}>
-            <span className="font-medium text-pink-400">{email}</span>으로<br />
-            6자리 코드를 보냈어요
+          <p className="text-sm t-sub leading-relaxed">
+            <span className="font-medium" style={{ color: 'var(--accent-from)' }}>{email}</span>
+            <br />으로 로그인 링크를 보냈어요
           </p>
         </div>
 
-        <form onSubmit={handleSubmit}
-          className="bg-white/70 backdrop-blur-sm rounded-3xl p-8 shadow-xl shadow-pink-100 space-y-8">
+        {/* 안내 카드 */}
+        <div className="t-card t-card-shadow rounded-3xl p-6 space-y-4 anim-fade-up anim-delay-1 text-left">
+          {[
+            { icon: '1️⃣', text: '이메일 받은 편지함을 열어주세요' },
+            { icon: '2️⃣', text: '\'축제 인연 찾기\' 메일의 링크를 클릭해주세요' },
+            { icon: '3️⃣', text: '자동으로 로그인돼요' },
+          ].map((step, i) => (
+            <div key={i} className="flex items-center gap-3">
+              <span className="text-xl flex-shrink-0">{step.icon}</span>
+              <p className="text-sm t-sub">{step.text}</p>
+            </div>
+          ))}
+        </div>
 
-          {/* 6자리 입력 박스 */}
-          <div className="flex gap-2 justify-center">
-            {code.map((digit, idx) => (
-              <input
-                key={idx}
-                ref={el => { inputRefs.current[idx] = el }}
-                type="text"
-                inputMode="numeric"
-                maxLength={1}
-                value={digit}
-                onChange={e => handleInput(idx, e.target.value)}
-                onKeyDown={e => handleKeyDown(idx, e)}
-                className="w-11 h-14 text-center text-xl font-bold rounded-2xl border-2 outline-none transition-all"
-                style={{
-                  borderColor: digit ? '#ec4899' : '#e5e7eb',
-                  background: digit ? 'rgba(244,114,182,0.06)' : 'white',
-                  color: '#1f2937',
-                  fontFamily: "'Gaegu', cursive",
-                }}
-              />
-            ))}
-          </div>
-
-          {error && (
-            <p className="text-xs text-red-400 text-center">{error}</p>
+        {/* 재전송 */}
+        <div className="mt-6 space-y-3 anim-fade-up anim-delay-2">
+          {resendDone && (
+            <p className="text-xs t-sub">✅ 다시 보냈어요! 받은 편지함을 확인해주세요</p>
           )}
-
-          <Button
-            type="submit"
-            disabled={loading || code.join('').length < 6}
-            className="w-full rounded-xl h-12 font-semibold text-white"
-            style={{
-              background: code.join('').length === 6
-                ? 'linear-gradient(135deg, #ec4899, #a855f7)'
-                : '#e5e7eb',
-              boxShadow: code.join('').length === 6 ? '0 4px 20px rgba(168,85,247,0.3)' : 'none',
-            }}>
-            {loading ? '확인 중...' : '인증하기 ✨'}
-          </Button>
-
-          <button
-            type="button"
-            onClick={handleResend}
-            disabled={resendCool > 0}
-            className="w-full text-xs text-center transition-colors"
-            style={{ color: resendCool > 0 ? '#d1d5db' : '#a855f7' }}>
-            {resendCool > 0 ? `${resendCool}초 후 재전송 가능` : '코드 다시 받기'}
+          <button onClick={handleResend} disabled={resendCool > 0}
+            className="text-sm font-medium transition-all"
+            style={{ color: resendCool > 0 ? 'var(--text-muted)' : 'var(--accent-from)' }}>
+            {resendCool > 0 ? `${resendCool}초 후 재전송 가능` : '이메일 다시 받기'}
           </button>
-        </form>
+          <br />
+          <button onClick={() => router.push('/auth/signup')}
+            className="text-xs t-muted underline underline-offset-2">
+            이메일 주소 변경하기
+          </button>
+        </div>
+
       </div>
     </main>
   )
 }
 
 export default function VerifyPage() {
-  return (
-    <Suspense>
-      <VerifyForm />
-    </Suspense>
-  )
+  return <Suspense><VerifyForm /></Suspense>
 }

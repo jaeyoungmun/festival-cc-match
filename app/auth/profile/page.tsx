@@ -1,27 +1,43 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { Button } from '@/components/ui/button'
+import { useState, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 
-export default function ProfilePage() {
+function ProfileForm() {
   const router = useRouter()
+  const email = useSearchParams().get('email') ?? ''
+  const supabase = createClient()
+
+  const [password, setPassword] = useState('')
+  const [passwordConfirm, setPasswordConfirm] = useState('')
   const [instagramId, setInstagramId] = useState('')
   const [gender, setGender] = useState<'male' | 'female' | ''>('')
   const [department, setDepartment] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [showPw, setShowPw] = useState(false)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    if (password.length < 8) { setError('비밀번호는 8자 이상이어야 합니다'); return }
+    if (password !== passwordConfirm) { setError('비밀번호가 일치하지 않습니다'); return }
     if (!instagramId) { setError('인스타그램 ID를 입력해주세요'); return }
     if (!gender) { setError('성별을 선택해주세요'); return }
 
-    setLoading(true)
-    setError('')
+    setLoading(true); setError('')
 
+    // 1. Supabase Auth 비밀번호 업데이트
+    const { error: pwError } = await supabase.auth.updateUser({ password })
+    if (pwError) {
+      setLoading(false)
+      setError('비밀번호 설정에 실패했습니다')
+      return
+    }
+
+    // 2. 프로필 저장
     const res = await fetch('/api/user/profile', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -32,129 +48,134 @@ export default function ProfilePage() {
       }),
     })
 
-    const data = await res.json()
     setLoading(false)
 
-    if (!res.ok) { setError(data.error ?? '오류가 발생했습니다'); return }
+    if (!res.ok) {
+      const data = await res.json()
+      setError(data.error ?? '프로필 저장에 실패했습니다')
+      return
+    }
 
-    router.push('/feed')
+    router.replace('/feed')
   }
 
+  const ready = password.length >= 8 && password === passwordConfirm && !!instagramId && !!gender
+
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center px-6"
-      style={{ background: 'linear-gradient(135deg, #fdf4ff 0%, #fce7f3 50%, #ede9fe 100%)' }}>
+    <main className="min-h-screen t-page flex flex-col items-center justify-center px-6 relative overflow-hidden">
+      <div className="fixed inset-0 pointer-events-none"
+        style={{ background: 'radial-gradient(ellipse at 50% 20%, var(--accent-glow), transparent 65%)' }} />
 
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-20 -left-20 w-72 h-72 rounded-full opacity-20"
-          style={{ background: 'radial-gradient(circle, #f472b6, transparent)' }} />
-        <div className="absolute -bottom-20 -right-20 w-96 h-96 rounded-full opacity-20"
-          style={{ background: 'radial-gradient(circle, #a855f7, transparent)' }} />
-      </div>
-
-      <div className="relative w-full max-w-sm">
-        <div className="text-center mb-10">
-          <div className="text-5xl mb-4">🌸</div>
-          <h1 className="text-3xl font-bold mb-2"
-            style={{
-              fontFamily: "'Gaegu', cursive",
-              background: 'linear-gradient(135deg, #ec4899, #a855f7)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-            }}>
+      <div className="relative w-full" style={{ maxWidth: 360 }}>
+        <div className="text-center mb-8 anim-fade-up">
+          <div className="text-4xl mb-3">🌸</div>
+          <h1 className="font-bold t-accent-text" style={{ fontFamily: "'Gaegu', cursive", fontSize: '1.9rem' }}>
             프로필 설정
           </h1>
-          <p className="text-sm text-gray-500" style={{ fontFamily: "'Noto Sans KR', sans-serif" }}>
-            이성에게 보여질 정보예요
-          </p>
+          <p className="text-sm t-sub mt-1">마지막 단계예요! 거의 다 왔어요</p>
         </div>
 
         <form onSubmit={handleSubmit}
-          className="bg-white/70 backdrop-blur-sm rounded-3xl p-8 shadow-xl shadow-pink-100 space-y-6">
+          className="t-card t-card-shadow rounded-3xl p-7 space-y-5 anim-fade-up anim-delay-1">
 
-          {/* 인스타 ID */}
-          <div className="space-y-2">
-            <Label htmlFor="instagram" className="text-gray-700 font-medium text-sm">
-              인스타그램 ID <span className="text-pink-400">*</span>
+          {/* 비밀번호 */}
+          <div className="space-y-1.5">
+            <Label className="t-text text-sm font-medium">
+              비밀번호 설정 <span style={{ color: 'var(--accent-from)' }}>*</span>
             </Label>
             <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">@</span>
-              <Input
-                id="instagram"
-                type="text"
-                placeholder="your_instagram"
-                value={instagramId}
-                onChange={e => setInstagramId(e.target.value.replace(/^@/, ''))}
-                className="pl-7 rounded-xl border-pink-100 focus:border-pink-300 bg-white/80"
-                required
-              />
+              <Input type={showPw ? 'text' : 'password'} placeholder="8자 이상"
+                value={password} onChange={e => { setPassword(e.target.value); setError('') }}
+                className="rounded-xl bg-transparent t-text h-12 pr-12"
+                style={{ borderColor: 'var(--border)' }} />
+              <button type="button" onClick={() => setShowPw(v => !v)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-lg">
+                {showPw ? '🙈' : '👁️'}
+              </button>
             </div>
-            <p className="text-xs text-gray-400" style={{ fontFamily: "'Noto Sans KR', sans-serif" }}>
-              반드시 <span className="text-pink-400 font-medium">공개 계정</span>으로 설정해주세요
+            <Input type={showPw ? 'text' : 'password'} placeholder="비밀번호 확인"
+              value={passwordConfirm} onChange={e => { setPasswordConfirm(e.target.value); setError('') }}
+              className="rounded-xl bg-transparent t-text h-12"
+              style={{
+                borderColor: passwordConfirm && password !== passwordConfirm
+                  ? '#ef4444' : 'var(--border)',
+              }} />
+            {passwordConfirm && password !== passwordConfirm && (
+              <p className="text-xs text-red-400">비밀번호가 일치하지 않아요</p>
+            )}
+          </div>
+
+          {/* 구분선 */}
+          <div style={{ height: 1, background: 'var(--border)' }} />
+
+          {/* 인스타 ID */}
+          <div className="space-y-1.5">
+            <Label className="t-text text-sm font-medium">
+              인스타그램 ID <span style={{ color: 'var(--accent-from)' }}>*</span>
+            </Label>
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm t-muted">@</span>
+              <Input type="text" placeholder="your_instagram"
+                value={instagramId} onChange={e => setInstagramId(e.target.value.replace(/^@/, ''))}
+                className="pl-7 rounded-xl bg-transparent t-text h-12"
+                style={{ borderColor: 'var(--border)' }} />
+            </div>
+            <p className="text-xs t-muted">
+              반드시 <span className="font-medium" style={{ color: 'var(--accent-from)' }}>공개 계정</span>으로 설정해주세요
             </p>
           </div>
 
-          {/* 성별 선택 */}
-          <div className="space-y-2">
-            <Label className="text-gray-700 font-medium text-sm">
-              성별 <span className="text-pink-400">*</span>
+          {/* 성별 */}
+          <div className="space-y-1.5">
+            <Label className="t-text text-sm font-medium">
+              성별 <span style={{ color: 'var(--accent-from)' }}>*</span>
             </Label>
             <div className="grid grid-cols-2 gap-3">
-              {[
-                { value: 'male', label: '남자', emoji: '🙋‍♂️' },
-                { value: 'female', label: '여자', emoji: '🙋‍♀️' },
-              ].map(opt => (
-                <button
-                  key={opt.value}
-                  type="button"
+              {[{ value: 'male', label: '남자', emoji: '🙋‍♂️' }, { value: 'female', label: '여자', emoji: '🙋‍♀️' }].map(opt => (
+                <button key={opt.value} type="button"
                   onClick={() => setGender(opt.value as 'male' | 'female')}
-                  className="py-4 rounded-2xl border-2 flex flex-col items-center gap-1 transition-all"
+                  className="py-4 rounded-2xl flex flex-col items-center gap-1 transition-all"
                   style={{
-                    borderColor: gender === opt.value ? '#ec4899' : '#e5e7eb',
-                    background: gender === opt.value ? 'rgba(244,114,182,0.08)' : 'white',
+                    border: `2px solid ${gender === opt.value ? 'var(--accent-from)' : 'var(--border)'}`,
+                    background: gender === opt.value ? 'var(--accent-soft)' : 'var(--bg-card-hover)',
                   }}>
                   <span className="text-2xl">{opt.emoji}</span>
-                  <span className="text-sm font-medium text-gray-700"
-                    style={{ fontFamily: "'Noto Sans KR', sans-serif" }}>
-                    {opt.label}
-                  </span>
+                  <span className="text-sm font-medium t-text">{opt.label}</span>
                 </button>
               ))}
             </div>
           </div>
 
-          {/* 학과 (선택) */}
-          <div className="space-y-2">
-            <Label htmlFor="department" className="text-gray-700 font-medium text-sm">
-              학과 <span className="text-gray-300 font-normal">(선택)</span>
+          {/* 학과 선택 */}
+          <div className="space-y-1.5">
+            <Label className="t-text text-sm font-medium">
+              학과 <span className="t-muted font-normal text-xs">(선택)</span>
             </Label>
-            <Input
-              id="department"
-              type="text"
-              placeholder="ex. 경영학과"
-              value={department}
-              onChange={e => setDepartment(e.target.value)}
-              className="rounded-xl border-pink-100 focus:border-pink-300 bg-white/80"
-            />
+            <Input type="text" placeholder="ex. 경영학과"
+              value={department} onChange={e => setDepartment(e.target.value)}
+              className="rounded-xl bg-transparent t-text h-12"
+              style={{ borderColor: 'var(--border)' }} />
           </div>
 
-          {error && (
-            <p className="text-xs text-red-400 text-center">{error}</p>
-          )}
+          {error && <p className="text-xs text-red-400 text-center">{error}</p>}
 
-          <Button
-            type="submit"
-            disabled={loading || !instagramId || !gender}
-            className="w-full rounded-xl h-12 font-semibold text-white"
+          <button type="submit" disabled={loading || !ready}
+            className="w-full font-semibold transition-all active:scale-95"
             style={{
-              background: instagramId && gender
-                ? 'linear-gradient(135deg, #ec4899, #a855f7)'
-                : '#e5e7eb',
-              boxShadow: instagramId && gender ? '0 4px 20px rgba(168,85,247,0.3)' : 'none',
+              height: 48, borderRadius: 14, fontSize: 15,
+              background: 'linear-gradient(135deg, var(--accent-from), var(--accent-to))',
+              color: 'var(--accent-text)',
+              opacity: (!ready || loading) ? 0.45 : 1,
+              boxShadow: ready ? 'var(--shadow-btn)' : 'none',
             }}>
             {loading ? '저장 중...' : '시작하기 🎉'}
-          </Button>
+          </button>
         </form>
       </div>
     </main>
   )
+}
+
+export default function ProfilePage() {
+  return <Suspense><ProfileForm /></Suspense>
 }
