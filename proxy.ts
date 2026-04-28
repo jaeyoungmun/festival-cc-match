@@ -10,7 +10,7 @@ const PUBLIC_PATHS = [
   "/auth/callback",
 ];
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const response = NextResponse.next({ request });
 
