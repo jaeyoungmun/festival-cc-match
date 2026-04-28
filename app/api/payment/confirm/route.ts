@@ -75,7 +75,7 @@ export async function POST(request: NextRequest) {
   }
 
   // 5. service_role로 DB 업데이트 (RLS 우회 필요)
-  const svc = createServiceClient();
+  const svc = await createServiceClient();
 
   // 5-1. payments 기록
   const { error: payError } = await svc.from("payments").insert({

@@ -1,22 +1,34 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-type Step = "email" | "consent";
+type Step = "email" | "login" | "consent";
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
+  const supabase = createClient();
+  const searchParams = useSearchParams();
+
+  const urlError = searchParams.get("error");
   const [step, setStep] = useState<Step>("email");
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [agreed, setAgreed] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [showPw, setShowPw] = useState(false);
+  const [error, setError] = useState(
+    urlError === "link_expired"
+      ? "링크가 만료됐어요. 다시 시도해주세요"
+      : urlError === "auth_error"
+        ? "인증에 실패했어요. 다시 시도해주세요"
+        : "",
+  );
 
-  // 1단계 — 이메일 입력 후 기존 유저 여부 확인
-  async function handleEmailSubmit(e: React.FormEvent) {
+  async function handleEmailNext(e: React.FormEvent) {
     e.preventDefault();
     if (!email.includes("@")) {
       setError("올바른 이메일을 입력해주세요");
@@ -24,8 +36,6 @@ export default function LoginPage() {
     }
     setLoading(true);
     setError("");
-
-    // 기존 유저인지 먼저 확인
     const res = await fetch("/api/auth/check-user", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -33,32 +43,39 @@ export default function LoginPage() {
     });
     const data = await res.json();
     setLoading(false);
-
     if (!res.ok) {
       setError(data.error ?? "오류가 발생했습니다");
       return;
     }
-
-    if (data.exists) {
-      // 기존 유저 → 동의 없이 바로 OTP 발송
-      await sendOtp();
-    } else {
-      // 신규 유저 → 동의 단계로
-      setStep("consent");
-    }
+    setStep(data.exists ? "login" : "consent");
   }
 
-  // 2단계 — 동의 후 OTP 발송 (신규 유저)
-  async function handleConsentSubmit(e: React.FormEvent) {
+  async function handleLogin(e: React.FormEvent) {
+    e.preventDefault();
+    if (!password) {
+      setError("비밀번호를 입력해주세요");
+      return;
+    }
+    setLoading(true);
+    setError("");
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+    setLoading(false);
+    if (signInError) {
+      setError("이메일 또는 비밀번호가 올바르지 않습니다");
+      return;
+    }
+    router.replace("/feed");
+  }
+
+  async function handleConsentNext(e: React.FormEvent) {
     e.preventDefault();
     if (!agreed) {
       setError("동의가 필요합니다");
       return;
     }
-    await sendOtp();
-  }
-
-  async function sendOtp() {
     setLoading(true);
     setError("");
     const res = await fetch("/api/auth/send-code", {
@@ -75,6 +92,16 @@ export default function LoginPage() {
     router.push(`/auth/verify?email=${encodeURIComponent(email)}`);
   }
 
+  const btnStyle = (active: boolean) => ({
+    height: 48,
+    borderRadius: 14,
+    fontSize: 15,
+    background: "linear-gradient(135deg, var(--accent-from), var(--accent-to))",
+    color: "var(--accent-text)",
+    opacity: active ? 1 : 0.45,
+    boxShadow: active ? "var(--shadow-btn)" : "none",
+  });
+
   return (
     <main className="min-h-screen t-page flex flex-col items-center justify-center px-6 relative overflow-hidden">
       <div
@@ -86,7 +113,6 @@ export default function LoginPage() {
       />
 
       <div className="relative w-full" style={{ maxWidth: 360 }}>
-        {/* 로고 */}
         <div className="text-center mb-8 anim-fade-up">
           <button
             onClick={() => router.push("/")}
@@ -101,16 +127,16 @@ export default function LoginPage() {
             축제 인연 찾기
           </h1>
           <p className="text-sm t-sub mt-1">
-            {step === "email"
-              ? "학교 이메일로 시작해요"
-              : "서비스 이용 동의가 필요해요"}
+            {step === "email" && "학교 이메일로 시작해요"}
+            {step === "login" && "비밀번호를 입력해주세요"}
+            {step === "consent" && "처음 오셨군요! 동의 후 가입해요"}
           </p>
         </div>
 
-        {/* ── 이메일 입력 단계 ── */}
+        {/* 1단계 — 이메일 */}
         {step === "email" && (
           <form
-            onSubmit={handleEmailSubmit}
+            onSubmit={handleEmailNext}
             className="t-card t-card-shadow rounded-3xl p-7 space-y-5 anim-fade-up anim-delay-1"
           >
             <div className="space-y-1.5">
@@ -131,40 +157,95 @@ export default function LoginPage() {
                 autoFocus
                 required
               />
-              <p className="text-xs t-muted">.sangmyung.kr 이메일만 가능해요</p>
+              <p className="text-xs t-muted">
+                상명대학교 이메일(@sangmyung.kr)만 가능해요
+              </p>
             </div>
-
             {error && (
               <p className="text-xs text-red-400 text-center">{error}</p>
             )}
-
             <button
               type="submit"
               disabled={loading || !email}
               className="w-full font-semibold transition-all active:scale-95"
-              style={{
-                height: 48,
-                borderRadius: 14,
-                background:
-                  "linear-gradient(135deg, var(--accent-from), var(--accent-to))",
-                color: "var(--accent-text)",
-                opacity: !email || loading ? 0.45 : 1,
-                boxShadow: email ? "var(--shadow-btn)" : "none",
-                fontSize: 15,
-              }}
+              style={btnStyle(!!email && !loading)}
             >
               {loading ? "확인 중..." : "계속하기 →"}
             </button>
           </form>
         )}
 
-        {/* ── 동의 단계 (신규 유저) ── */}
-        {step === "consent" && (
+        {/* 2a단계 — 기존 유저 비밀번호 로그인 */}
+        {step === "login" && (
           <form
-            onSubmit={handleConsentSubmit}
+            onSubmit={handleLogin}
             className="t-card t-card-shadow rounded-3xl p-7 space-y-5 anim-fade-up"
           >
-            {/* 신규 안내 */}
+            <div
+              className="flex items-center justify-between p-3 rounded-xl t-badge"
+              style={{ border: "1px solid var(--border)" }}
+            >
+              <p className="text-sm t-text truncate">{email}</p>
+              <button
+                type="button"
+                onClick={() => {
+                  setStep("email");
+                  setPassword("");
+                  setError("");
+                }}
+                className="text-xs t-muted ml-2 flex-shrink-0 underline underline-offset-2"
+              >
+                변경
+              </button>
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="password" className="t-text text-sm font-medium">
+                비밀번호
+              </Label>
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPw ? "text" : "password"}
+                  placeholder="비밀번호 입력"
+                  value={password}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    setError("");
+                  }}
+                  className="rounded-xl bg-transparent t-text h-12 pr-12"
+                  style={{ borderColor: "var(--border)" }}
+                  autoFocus
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPw((v) => !v)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-lg t-muted"
+                >
+                  {showPw ? "🙈" : "👁️"}
+                </button>
+              </div>
+            </div>
+            {error && (
+              <p className="text-xs text-red-400 text-center">{error}</p>
+            )}
+            <button
+              type="submit"
+              disabled={loading || !password}
+              className="w-full font-semibold transition-all active:scale-95"
+              style={btnStyle(!!password && !loading)}
+            >
+              {loading ? "로그인 중..." : "로그인"}
+            </button>
+          </form>
+        )}
+
+        {/* 2b단계 — 신규 유저 동의 */}
+        {step === "consent" && (
+          <form
+            onSubmit={handleConsentNext}
+            className="t-card t-card-shadow rounded-3xl p-7 space-y-5 anim-fade-up"
+          >
             <div
               className="flex items-center gap-3 p-3 rounded-2xl"
               style={{
@@ -176,12 +257,10 @@ export default function LoginPage() {
               <div>
                 <p className="text-xs font-semibold t-text">처음 오셨군요!</p>
                 <p className="text-xs t-sub mt-0.5">
-                  아래 동의 후 가입이 완료돼요
+                  이메일 인증 후 비밀번호를 설정해요
                 </p>
               </div>
             </div>
-
-            {/* 이메일 확인 */}
             <div
               className="p-3 rounded-xl t-badge"
               style={{ border: "1px solid var(--border)" }}
@@ -189,8 +268,6 @@ export default function LoginPage() {
               <p className="text-xs t-muted mb-0.5">가입 이메일</p>
               <p className="text-sm font-medium t-text">{email}</p>
             </div>
-
-            {/* 동의 체크박스 */}
             <label
               className="flex gap-3 p-4 rounded-2xl cursor-pointer transition-colors"
               style={{
@@ -243,36 +320,24 @@ export default function LoginPage() {
                 설정해주세요.
               </p>
             </label>
-
             {error && (
               <p className="text-xs text-red-400 text-center">{error}</p>
             )}
-
             <button
               type="submit"
               disabled={loading || !agreed}
               className="w-full font-semibold transition-all active:scale-95"
-              style={{
-                height: 48,
-                borderRadius: 14,
-                background:
-                  "linear-gradient(135deg, var(--accent-from), var(--accent-to))",
-                color: "var(--accent-text)",
-                opacity: !agreed || loading ? 0.45 : 1,
-                boxShadow: agreed ? "var(--shadow-btn)" : "none",
-                fontSize: 15,
-              }}
+              style={btnStyle(agreed && !loading)}
             >
               {loading ? "전송 중..." : "인증 메일 받기 ✉️"}
             </button>
-
             <button
               type="button"
               onClick={() => {
                 setStep("email");
                 setError("");
               }}
-              className="w-full text-sm t-muted transition-all"
+              className="w-full text-sm t-muted"
               style={{ paddingTop: 4 }}
             >
               ← 이메일 다시 입력
@@ -283,9 +348,17 @@ export default function LoginPage() {
         <p className="text-center text-xs t-muted mt-6">
           로그인하면{" "}
           <span style={{ color: "var(--accent-from)" }}>축제 인연 찾기</span>{" "}
-          서비스 이용약관에 동의한 것으로 간주돼요
+          이용약관에 동의한 것으로 간주돼요
         </p>
       </div>
     </main>
+  );
+}
+
+export default function SignupPage() {
+  return (
+    <Suspense>
+      <LoginForm />
+    </Suspense>
   );
 }

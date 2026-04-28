@@ -13,10 +13,10 @@ export async function POST(request: NextRequest) {
   }
 
   // 학교 이메일 형식 검증
-  const isSchoolEmail = /^[a-zA-Z0-9._%+-]+@sangmyung\.kr$/i.test(email);
-  if (!isSchoolEmail) {
+  const domain = email.split("@")[1] ?? "";
+  if (domain !== "sangmyung.kr") {
     return NextResponse.json(
-      { error: "학교 이메일(sangmyung.kr)만 사용 가능합니다" },
+      { error: "상명대학교 이메일(@sangmyung.kr)만 사용 가능합니다" },
       { status: 400 },
     );
   }
