@@ -27,11 +27,12 @@ export default function LandingPage() {
 
   useEffect(() => {
     const supabase = createClient();
-    supabase.auth.getUser().then((result) => {
-      const user = result.data.user;
-      if (user) router.replace("/feed");
-      else setChecking(false);
-    });
+    supabase.auth
+      .getUser()
+      .then(({ data: { user } }: { data: { user: any } }) => {
+        if (user) router.replace("/feed");
+        else setChecking(false);
+      });
   }, [router]);
 
   if (checking) {
