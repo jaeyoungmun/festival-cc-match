@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
   if (!tossRes.ok) {
     console.error("[payment/confirm] toss error:", tossData);
     // payments 테이블에 실패 기록
-    const svc = createServiceClient();
+    const svc = await createServiceClient();
     await svc.from("payments").insert({
       user_id: user.id,
       toss_payment_key: paymentKey,
