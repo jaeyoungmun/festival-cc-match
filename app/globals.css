@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&family=Noto+Sans+KR:wght@400;500;600&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&family=Noto+Sans+KR:wght@400;500;600&family=Pretendard:wght@400;500;600;700&display=swap");
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -6,90 +6,237 @@
 /* ================================================
    테마 변수 — data-theme 속성 하나로 전체 앱 변경
    layout.tsx의 <html data-theme="light"> 만 바꾸면 됨
-   옵션: "light" | "dark" | "festival"
+   옵션: "light" | "dark" | "festival" | "sm_blue"
    ================================================ */
 
 [data-theme="light"] {
-  --bg-page:        #ffffff;
-  --bg-card:        #f9f9f7;
-  --bg-card-hover:  #f2f1ee;
-  --bg-badge:       #f3f2ef;
-  --border:         #e8e7e3;
-  --border-accent:  #d4d2cc;
-  --text-primary:   #1a1a18;
+  --bg-page: #ffffff;
+  --bg-card: #f9f9f7;
+  --bg-card-hover: #f2f1ee;
+  --bg-badge: #f3f2ef;
+  --border: #e8e7e3;
+  --border-accent: #d4d2cc;
+  --text-primary: #1a1a18;
   --text-secondary: #6b6a66;
-  --text-muted:     #a8a7a3;
-  --accent-from:    #e8545a;
-  --accent-to:      #c2396e;
-  --accent-text:    #ffffff;
-  --accent-soft:    rgba(232, 84, 90, 0.08);
-  --accent-glow:    rgba(232, 84, 90, 0.15);
-  --shadow-card:    0 2px 16px rgba(0,0,0,0.06), 0 1px 4px rgba(0,0,0,0.04);
-  --shadow-btn:     0 4px 16px rgba(232, 84, 90, 0.25);
-  --deco-opacity:   0.06;
+  --text-muted: #a8a7a3;
+  --accent-from: #e8545a;
+  --accent-to: #c2396e;
+  --accent-text: #ffffff;
+  --accent-soft: rgba(232, 84, 90, 0.08);
+  --accent-glow: rgba(232, 84, 90, 0.15);
+  --shadow-card: 0 2px 16px rgba(0, 0, 0, 0.06), 0 1px 4px rgba(0, 0, 0, 0.04);
+  --shadow-btn: 0 4px 16px rgba(232, 84, 90, 0.25);
+  --deco-opacity: 0.06;
 }
 
 [data-theme="dark"] {
-  --bg-page:        #0f0f0e;
-  --bg-card:        #1a1a18;
-  --bg-card-hover:  #222220;
-  --bg-badge:       #242422;
-  --border:         #2a2a28;
-  --border-accent:  #3a3a38;
-  --text-primary:   #eeecea;
+  --bg-page: #0f0f0e;
+  --bg-card: #1a1a18;
+  --bg-card-hover: #222220;
+  --bg-badge: #242422;
+  --border: #2a2a28;
+  --border-accent: #3a3a38;
+  --text-primary: #eeecea;
   --text-secondary: #8a8a86;
-  --text-muted:     #5a5a58;
-  --accent-from:    #f472b6;
-  --accent-to:      #a855f7;
-  --accent-text:    #ffffff;
-  --accent-soft:    rgba(244, 114, 182, 0.08);
-  --accent-glow:    rgba(244, 114, 182, 0.12);
-  --shadow-card:    0 2px 24px rgba(0,0,0,0.4);
-  --shadow-btn:     0 4px 20px rgba(168, 85, 247, 0.3);
-  --deco-opacity:   0.12;
+  --text-muted: #5a5a58;
+  --accent-from: #f472b6;
+  --accent-to: #a855f7;
+  --accent-text: #ffffff;
+  --accent-soft: rgba(244, 114, 182, 0.08);
+  --accent-glow: rgba(244, 114, 182, 0.12);
+  --shadow-card: 0 2px 24px rgba(0, 0, 0, 0.4);
+  --shadow-btn: 0 4px 20px rgba(168, 85, 247, 0.3);
+  --deco-opacity: 0.12;
 }
 
 [data-theme="festival"] {
-  --bg-page:        #fdf4ff;
-  --bg-card:        rgba(255,255,255,0.75);
-  --bg-card-hover:  rgba(255,255,255,0.9);
-  --bg-badge:       rgba(244,114,182,0.08);
-  --border:         rgba(244,114,182,0.15);
-  --border-accent:  rgba(168,85,247,0.25);
-  --text-primary:   #2d1a3d;
+  --bg-page: #fdf4ff;
+  --bg-card: rgba(255, 255, 255, 0.75);
+  --bg-card-hover: rgba(255, 255, 255, 0.9);
+  --bg-badge: rgba(244, 114, 182, 0.08);
+  --border: rgba(244, 114, 182, 0.15);
+  --border-accent: rgba(168, 85, 247, 0.25);
+  --text-primary: #2d1a3d;
   --text-secondary: #7c5c8a;
-  --text-muted:     #b49cc0;
-  --accent-from:    #f472b6;
-  --accent-to:      #a855f7;
-  --accent-text:    #ffffff;
-  --accent-soft:    rgba(244, 114, 182, 0.1);
-  --accent-glow:    rgba(168, 85, 247, 0.2);
-  --shadow-card:    0 8px 32px rgba(168,85,247,0.12), 0 2px 8px rgba(244,114,182,0.08);
-  --shadow-btn:     0 4px 20px rgba(168, 85, 247, 0.35);
-  --deco-opacity:   0.18;
+  --text-muted: #b49cc0;
+  --accent-from: #f472b6;
+  --accent-to: #a855f7;
+  --accent-text: #ffffff;
+  --accent-soft: rgba(244, 114, 182, 0.1);
+  --accent-glow: rgba(168, 85, 247, 0.2);
+  --shadow-card:
+    0 8px 32px rgba(168, 85, 247, 0.12), 0 2px 8px rgba(244, 114, 182, 0.08);
+  --shadow-btn: 0 4px 20px rgba(168, 85, 247, 0.35);
+  --deco-opacity: 0.18;
+}
+
+/* ================================================
+   sm_blue 테마
+   상명대 스뮤시그널 서비스 UI 스타일 기반
+   메인: #4364F7 파랑 / 보조: #664BFF 보라
+   배경: 흰색 + 파란 상단 구조
+   버튼: rounded-[32px] 알약형
+   폰트: Pretendard
+   ================================================ */
+[data-theme="sm_blue"] {
+  --bg-page: #ffffff;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f0f4ff;
+  --bg-badge: #e1eaf8;
+  --border: #e8edf5;
+  --border-accent: #b4c8f0;
+  --text-primary: #111827;
+  --text-secondary: #4b5563;
+  --text-muted: #9ca3af;
+  --accent-from: #4364f7;
+  --accent-to: #3c57e8;
+  --accent-text: #ffffff;
+  --accent-soft: rgba(67, 100, 247, 0.08);
+  --accent-glow: rgba(67, 100, 247, 0.15);
+  --shadow-card:
+    0 2px 16px rgba(67, 100, 247, 0.08), 0 1px 4px rgba(0, 0, 0, 0.04);
+  --shadow-btn: 0 4px 16px rgba(67, 100, 247, 0.35);
+  --deco-opacity: 0.08;
+
+  /* sm_blue 전용 추가 변수 */
+  --sm-blue-main: #4364f7;
+  --sm-blue-dark: #3c57e8;
+  --sm-blue-bg: #4b66ff; /* 상단 헤더 배경 */
+  --sm-blue-sub: #664bff; /* 보라 포인트 */
+  --sm-blue-light: #b4cff5; /* 연한 파랑 텍스트 */
+  --sm-blue-inactive: #e1eaf8; /* 비활성 버튼 */
+  --sm-blue-card-radius: 32px; /* 큰 둥근 모서리 */
+}
+
+/* sm_blue 전용 컴포넌트 클래스 */
+[data-theme="sm_blue"] body {
+  font-family: "Pretendard", "Noto Sans KR", sans-serif;
+}
+
+/* 상단 파랑 + 하단 흰색 레이아웃 */
+.sm-layout {
+  background: var(--sm-blue-bg);
+  min-height: 100vh;
+}
+.sm-layout-bottom {
+  background: white;
+  border-radius: 24px 24px 0 0;
+  flex: 1;
+}
+
+/* 알약형 버튼 */
+[data-theme="sm_blue"] .t-accent-bg {
+  background: var(--sm-blue-main);
+  border-radius: 32px;
+}
+
+/* 카드 스타일 */
+[data-theme="sm_blue"] .t-card {
+  background-color: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: var(--sm-blue-card-radius);
+  box-shadow: var(--shadow-card);
+}
+
+/* 헤더 영역 파란 배경 */
+.sm-header {
+  background: var(--sm-blue-bg);
+  color: white;
+  padding: 40px 20px 24px;
+}
+
+/* 보라 포인트 카드 */
+.sm-card-purple {
+  background: var(--sm-blue-sub);
+  border-radius: var(--sm-blue-card-radius);
+  color: white;
+}
+
+/* 파랑 포인트 카드 */
+.sm-card-blue {
+  background: var(--sm-blue-dark);
+  border-radius: var(--sm-blue-card-radius);
+  color: white;
+}
+
+/* 비활성 버튼 */
+.sm-btn-inactive {
+  background: var(--sm-blue-inactive);
+  color: white;
+  border-radius: 32px;
+  cursor: not-allowed;
+}
+
+/* 활성 버튼 */
+.sm-btn-active {
+  background: var(--sm-blue-main);
+  color: white;
+  border-radius: 32px;
+  box-shadow: var(--shadow-btn);
+  cursor: pointer;
+}
+
+/* 리롤 뱃지 */
+.sm-reroll-badge {
+  background: white;
+  color: #111827;
+  border-radius: 32px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.sm-reroll-count {
+  background: var(--sm-blue-main);
+  color: white;
+  border-radius: 32px;
+  padding: 2px 12px;
+  font-weight: 700;
+  font-size: 14px;
 }
 
 /* ================================================
    전역 기본값
    ================================================ */
-* { box-sizing: border-box; margin: 0; padding: 0; }
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
 
 body {
   background-color: var(--bg-page);
   color: var(--text-primary);
-  font-family: 'Noto Sans KR', sans-serif;
-  transition: background-color 0.3s ease, color 0.3s ease;
+  font-family: "Noto Sans KR", sans-serif;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
   -webkit-font-smoothing: antialiased;
 }
 
 /* 공통 유틸 클래스 */
-.t-page    { background-color: var(--bg-page); }
-.t-card    { background-color: var(--bg-card); border: 1px solid var(--border); }
-.t-text    { color: var(--text-primary); }
-.t-sub     { color: var(--text-secondary); }
-.t-muted   { color: var(--text-muted); }
-.t-border  { border-color: var(--border); }
-.t-badge   { background-color: var(--bg-badge); }
+.t-page {
+  background-color: var(--bg-page);
+}
+.t-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border);
+}
+.t-text {
+  color: var(--text-primary);
+}
+.t-sub {
+  color: var(--text-secondary);
+}
+.t-muted {
+  color: var(--text-muted);
+}
+.t-border {
+  border-color: var(--border);
+}
+.t-badge {
+  background-color: var(--bg-badge);
+}
 
 .t-accent-bg {
   background: linear-gradient(135deg, var(--accent-from), var(--accent-to));
@@ -100,15 +247,30 @@ body {
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
-.t-accent-border { border-color: var(--border-accent); }
-.t-btn-shadow    { box-shadow: var(--shadow-btn); }
-.t-card-shadow   { box-shadow: var(--shadow-card); }
+.t-accent-border {
+  border-color: var(--border-accent);
+}
+.t-btn-shadow {
+  box-shadow: var(--shadow-btn);
+}
+.t-card-shadow {
+  box-shadow: var(--shadow-card);
+}
 
 /* 플로팅 이모지 애니메이션 */
 @keyframes float-up {
-  0%   { transform: translateY(0px) rotate(0deg);   opacity: var(--deco-opacity); }
-  50%  { transform: translateY(-20px) rotate(8deg); opacity: calc(var(--deco-opacity) * 1.5); }
-  100% { transform: translateY(0px) rotate(0deg);   opacity: var(--deco-opacity); }
+  0% {
+    transform: translateY(0px) rotate(0deg);
+    opacity: var(--deco-opacity);
+  }
+  50% {
+    transform: translateY(-20px) rotate(8deg);
+    opacity: calc(var(--deco-opacity) * 1.5);
+  }
+  100% {
+    transform: translateY(0px) rotate(0deg);
+    opacity: var(--deco-opacity);
+  }
 }
 .floating-emoji {
   animation: float-up var(--dur, 8s) ease-in-out infinite;
@@ -117,11 +279,27 @@ body {
 
 /* 페이드인 */
 @keyframes fade-up {
-  from { opacity: 0; transform: translateY(16px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
-.anim-fade-up { animation: fade-up 0.5s cubic-bezier(0.16,1,0.3,1) both; }
-.anim-delay-1 { animation-delay: 0.1s; }
-.anim-delay-2 { animation-delay: 0.2s; }
-.anim-delay-3 { animation-delay: 0.32s; }
-.anim-delay-4 { animation-delay: 0.44s; }
+.anim-fade-up {
+  animation: fade-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.anim-delay-1 {
+  animation-delay: 0.1s;
+}
+.anim-delay-2 {
+  animation-delay: 0.2s;
+}
+.anim-delay-3 {
+  animation-delay: 0.32s;
+}
+.anim-delay-4 {
+  animation-delay: 0.44s;
+}
