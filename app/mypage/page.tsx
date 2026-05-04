@@ -11,7 +11,6 @@ type Profile = {
   department: string | null;
   gender: string;
   email: string;
-  is_visible: boolean;
 };
 
 type Section = "main" | "edit" | "delete-confirm";
@@ -59,17 +58,6 @@ export default function MyPage() {
     }
     load();
   }, [router]);
-
-  async function handleToggleVisible() {
-    if (!profile) return;
-    const next = !profile.is_visible;
-    setProfile((p) => (p ? { ...p, is_visible: next } : p));
-    await fetch("/api/user/profile", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ is_visible: next }),
-    });
-  }
 
   async function handleSaveEdit(e: React.FormEvent) {
     e.preventDefault();
@@ -188,7 +176,7 @@ export default function MyPage() {
                   </div>
                 </div>
 
-                {/* 리롤 잔여 */}
+                {/* 뽑기권 잔여 */}
                 <div
                   className="flex items-center justify-between p-3 rounded-2xl mb-4"
                   style={{
@@ -197,9 +185,9 @@ export default function MyPage() {
                   }}
                 >
                   <div className="flex items-center gap-2">
-                    <span>✨</span>
+                    <span>🎰</span>
                     <span className="text-sm font-medium t-text">
-                      리롤 잔여
+                      뽑기권 잔여
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
@@ -210,7 +198,7 @@ export default function MyPage() {
                         fontFamily: "'Gaegu', cursive",
                       }}
                     >
-                      {balance}회
+                      {balance}장
                     </span>
                     <button
                       onClick={() => router.push("/payment/select")}
@@ -225,47 +213,6 @@ export default function MyPage() {
                     </button>
                   </div>
                 </div>
-
-                {/* 공개 토글 */}
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium t-text">피드 공개</p>
-                    <p className="text-xs t-muted mt-0.5">
-                      {profile.is_visible
-                        ? "이성에게 내 계정이 보여요"
-                        : "내 계정이 숨겨진 상태예요"}
-                    </p>
-                  </div>
-                  {/* 토글 스위치 */}
-                  <button
-                    onClick={handleToggleVisible}
-                    className="relative transition-all active:scale-95"
-                    style={{
-                      width: 52,
-                      height: 28,
-                      borderRadius: 14,
-                      background: profile.is_visible
-                        ? "linear-gradient(135deg, var(--accent-from), var(--accent-to))"
-                        : "var(--bg-card-hover)",
-                      border: `1px solid ${profile.is_visible ? "transparent" : "var(--border)"}`,
-                      boxShadow: profile.is_visible
-                        ? "var(--shadow-btn)"
-                        : "none",
-                    }}
-                  >
-                    <span
-                      className="absolute top-1 transition-all"
-                      style={{
-                        width: 20,
-                        height: 20,
-                        borderRadius: "50%",
-                        background: "white",
-                        left: profile.is_visible ? 28 : 4,
-                        boxShadow: "0 1px 4px rgba(0,0,0,0.2)",
-                      }}
-                    />
-                  </button>
-                </div>
               </div>
             </div>
 
@@ -278,8 +225,8 @@ export default function MyPage() {
                 action: () => setSection("edit"),
               },
               {
-                icon: "💳",
-                label: "리롤 충전",
+                icon: "🎰",
+                label: "뽑기권 충전",
                 sub: "패키지 구매하기",
                 action: () => router.push("/payment/select"),
               },
@@ -458,7 +405,9 @@ export default function MyPage() {
               <p className="text-sm t-sub leading-relaxed">
                 탈퇴하면 내 계정이 피드에서 즉시 제거돼요.
                 <br />
-                잔여 리롤은 환불되지 않아요.
+                잔여 뽑기권은 환불되지 않아요. 특수한 경우에는 고객센터로 문의해주세요.
+                <br />
+                <span className="text-xs">고객센터: 부스 방문 / 카카오톡 오픈채팅</span>
               </p>
             </div>
             <button
