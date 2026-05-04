@@ -1,3 +1,9 @@
+// 이 페이지는 비활성화되었습니다 (테스트용 페이지)
+export default function Page() {
+  return null;
+}
+
+/*
 "use client";
 
 import { useState } from "react";
@@ -44,3 +50,4 @@ export default function TestLogin() {
     </div>
   );
 }
+*/
