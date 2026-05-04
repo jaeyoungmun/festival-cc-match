@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { loadTossPayments } from "@tosspayments/tosspayments-sdk";
+import { createClient } from "@/lib/supabase/client";
 
 const PACKAGES = [
   {
@@ -35,6 +36,15 @@ export default function PaymentSelectPage() {
   const router = useRouter();
   const [selected, setSelected] = useState<"A" | "B">("B");
   const [loading, setLoading] = useState(false);
+  const [userId, setUserId] = useState("");
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) setUserId(user.id);
+      else router.replace("/auth/signup");
+    });
+  }, [router]);
 
   async function handlePayment() {
     setLoading(true);
@@ -45,13 +55,13 @@ export default function PaymentSelectPage() {
       const pkg = PACKAGES.find((p) => p.id === selected)!;
       const orderId = generateOrderId();
 
-      const payment = toss.payment({ customerKey: `customer_${Date.now()}` });
+      const payment = toss.payment({ customerKey: userId });
 
       await payment.requestPayment({
         method: "CARD",
         amount: { currency: "KRW", value: pkg.price },
         orderId,
-        orderName: `축제 인연 리롤 ${pkg.rolls}회 패키지`,
+        orderName: `축제 인연 뽑기 ${pkg.rolls}회 패키지`,
         successUrl: `${window.location.origin}/payment/success?packageId=${pkg.id}`,
         failUrl: `${window.location.origin}/payment/fail`,
       });
@@ -95,16 +105,14 @@ export default function PaymentSelectPage() {
             className="font-bold t-text"
             style={{ fontFamily: "'Gaegu', cursive", fontSize: "1.5rem" }}
           >
-            리롤 충전
+            뽑기권 충전
           </h1>
         </header>
 
         {/* 안내 */}
         <div className="mb-6 anim-fade-up">
           <p className="text-sm t-sub leading-relaxed">
-            리롤 1회로 새로운 이성의 인스타를 확인할 수 있어요.
-            <br />
-            가입 시 무료 3회가 기본 제공돼요 ✨
+            뽑기 1회로 새로운 이성의 인스타를 확인할 수 있어요.
           </p>
         </div>
 
@@ -147,7 +155,7 @@ export default function PaymentSelectPage() {
                         className="font-bold t-text"
                         style={{ fontSize: 16 }}
                       >
-                        {p.emoji} 리롤 {p.rolls}회
+                        {p.emoji} 뽑기 {p.rolls}회
                       </span>
                       {p.hot && (
                         <span
@@ -182,7 +190,7 @@ export default function PaymentSelectPage() {
         <div className="t-card t-card-shadow rounded-2xl p-5 mb-6 anim-fade-up anim-delay-2">
           <div className="flex items-center justify-between mb-3">
             <p className="text-sm t-sub">선택한 패키지</p>
-            <p className="text-sm font-semibold t-text">리롤 {pkg.rolls}회</p>
+            <p className="text-sm font-semibold t-text">뽑기 {pkg.rolls}회</p>
           </div>
           <div className="flex items-center justify-between mb-3">
             <p className="text-sm t-sub">결제 금액</p>
@@ -196,8 +204,12 @@ export default function PaymentSelectPage() {
           <div
             style={{ height: 1, background: "var(--border)", margin: "12px 0" }}
           />
-          <p className="text-xs t-muted">
-            결제 후 즉시 리롤이 충전돼요. 환불은 미사용 시에만 가능해요.
+          <p className="text-xs t-muted leading-relaxed">
+            결제 후 즉시 뽑기권이 충전돼요.
+            <br />
+            뽑기권은 환불이 불가합니다. 특수한 경우에는 고객센터로 문의해주세요.
+            <br />
+            <span className="font-medium">고객센터: 부스 방문 / 카카오톡 오픈채팅</span>
           </p>
         </div>
 
