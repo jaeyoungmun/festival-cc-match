@@ -229,13 +229,7 @@ export default function LandingPage() {
           }}
         >
           <div className="flex items-center justify-between mb-4">
-            <p className="text-sm font-semibold t-text">💰 리롤 패키지</p>
-            <span
-              className="text-xs px-2 py-1 rounded-full t-badge t-sub"
-              style={{ border: "1px solid var(--border)" }}
-            >
-              가입 시 3회 무료
-            </span>
+            <p className="text-sm font-semibold t-text">🎰 뽑기 패키지</p>
           </div>
           <div className="grid grid-cols-2 gap-2">
             {[
@@ -289,7 +283,7 @@ export default function LandingPage() {
           className="text-xs t-muted"
           style={{ fontFamily: "'Noto Sans KR', sans-serif" }}
         >
-          © 2025 축제 인연 찾기 · 재학생 전용 서비스
+          © 2026 축제 인연 찾기 · 재학생 전용 서비스
         </p>
       </footer>
     </main>

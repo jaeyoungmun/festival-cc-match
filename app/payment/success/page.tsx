@@ -91,13 +91,13 @@ function SuccessContent() {
           style={{ fontFamily: "'Gaegu', cursive", fontSize: '2rem' }}>
           충전 완료!
         </h1>
-        <p className="text-sm t-sub">리롤이 충전됐어요</p>
+        <p className="text-sm t-sub">뽑기권이 충전됐어요</p>
       </div>
 
       {/* 충전 내역 카드 */}
       <div className="t-card t-card-shadow rounded-3xl p-6 space-y-3">
         <div className="flex items-center justify-between">
-          <p className="text-sm t-sub">충전된 리롤</p>
+          <p className="text-sm t-sub">충전된 뽑기권</p>
           <p className="font-bold t-accent-text"
             style={{ fontFamily: "'Gaegu', cursive", fontSize: '1.4rem' }}>
             +{rerolls}회

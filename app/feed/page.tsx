@@ -66,15 +66,15 @@ export default function FeedPage() {
         </button>
       </header>
 
-      {/* 리롤 잔여 뱃지 */}
+      {/* 뽑기권 잔여 뱃지 */}
       <div className="relative flex justify-center mb-2">
         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-medium t-badge"
           style={{
             border: '1px solid var(--border-accent)',
             color: balance > 0 ? 'var(--accent-from)' : 'var(--text-muted)',
           }}>
-          <span>✨</span>
-          <span>리롤 {balance}회 남음</span>
+          <span>🎰</span>
+          <span>뽑기권 {balance}장 남음</span>
         </div>
       </div>
 
@@ -140,7 +140,7 @@ export default function FeedPage() {
               </div>
             </div>
 
-            {/* 리롤 버튼 */}
+            {/* 뽑기 버튼 */}
             <div className="mt-5">
               <button onClick={handleReroll}
                 className="w-full py-4 rounded-2xl font-semibold text-sm transition-all active:scale-95 flex items-center justify-center gap-2 t-card"
@@ -149,7 +149,7 @@ export default function FeedPage() {
                   color: balance > 0 ? 'var(--accent-from)' : 'var(--text-muted)',
                 }}>
                 <span>🔀</span>
-                <span>{balance > 0 ? '다른 사람 보기' : '리롤 충전하기'}</span>
+                <span>{balance > 0 ? '다른 사람 보기' : '뽑기권 충전하기'}</span>
               </button>
             </div>
           </div>
@@ -161,14 +161,14 @@ export default function FeedPage() {
             <div>
               <p className="font-bold t-text mb-1"
                 style={{ fontFamily: "'Gaegu', cursive", fontSize: '1.3rem' }}>
-                리롤을 모두 사용했어요
+                뽑기권을 모두 사용했어요
               </p>
-              <p className="text-sm t-sub">패키지를 구매하고 더 많은 인연을 만나보세요</p>
+              <p className="text-sm t-sub">뽑기권을 구매하고 더 많은 인연을 만나보세요</p>
             </div>
             <button onClick={() => router.push('/payment/select')}
               className="w-full py-4 rounded-2xl font-semibold t-accent-bg transition-all active:scale-95"
               style={{ color: 'var(--accent-text)', boxShadow: 'var(--shadow-btn)' }}>
-              리롤 패키지 구경하기 ✨
+              뽑기권 구매하기 🎰
             </button>
             <button onClick={() => setState('card')} className="text-sm t-muted">
               현재 카드 다시 보기
