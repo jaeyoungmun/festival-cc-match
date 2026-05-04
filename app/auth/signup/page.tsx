@@ -15,7 +15,7 @@ function LoginForm() {
 
   const urlError = searchParams.get("error");
   const [step, setStep] = useState<Step>("email");
-  const [email, setEmail] = useState("");
+  const [studentId, setStudentId] = useState("");
   const [password, setPassword] = useState("");
   const [agreed, setAgreed] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -28,10 +28,12 @@ function LoginForm() {
         : "",
   );
 
+  const email = studentId ? `${studentId}@sangmyung.kr` : "";
+
   async function handleEmailNext(e: React.FormEvent) {
     e.preventDefault();
-    if (!email.includes("@")) {
-      setError("올바른 이메일을 입력해주세요");
+    if (!/^\d{6,}$/.test(studentId)) {
+      setError("학번을 숫자로 입력해주세요");
       return;
     }
     setLoading(true);
@@ -127,7 +129,7 @@ function LoginForm() {
             축제 인연 찾기
           </h1>
           <p className="text-sm t-sub mt-1">
-            {step === "email" && "학교 이메일로 시작해요"}
+            {step === "email" && "상명대 학번으로 시작해요"}
             {step === "login" && "비밀번호를 입력해주세요"}
             {step === "consent" && "처음 오셨군요! 동의 후 가입해요"}
           </p>
@@ -140,16 +142,18 @@ function LoginForm() {
             className="t-card t-card-shadow rounded-3xl p-7 space-y-5 anim-fade-up anim-delay-1"
           >
             <div className="space-y-1.5">
-              <Label htmlFor="email" className="t-text text-sm font-medium">
-                학교 이메일
+              <Label htmlFor="studentId" className="t-text text-sm font-medium">
+                학번
               </Label>
               <Input
-                id="email"
-                type="email"
-                placeholder="example@university.ac.kr"
-                value={email}
+                id="studentId"
+                type="text"
+                inputMode="numeric"
+                pattern="\d*"
+                placeholder="예: 202012345"
+                value={studentId}
                 onChange={(e) => {
-                  setEmail(e.target.value);
+                  setStudentId(e.target.value.replace(/\D/g, ""));
                   setError("");
                 }}
                 className="rounded-xl bg-transparent t-text h-12"
@@ -158,7 +162,7 @@ function LoginForm() {
                 required
               />
               <p className="text-xs t-muted">
-                상명대학교 이메일(@sangmyung.kr)만 가능해요
+                입력한 학번@sangmyung.kr 로 인증 메일이 발송돼요
               </p>
             </div>
             {error && (
@@ -166,9 +170,9 @@ function LoginForm() {
             )}
             <button
               type="submit"
-              disabled={loading || !email}
+              disabled={loading || !studentId}
               className="w-full font-semibold transition-all active:scale-95"
-              style={btnStyle(!!email && !loading)}
+              style={btnStyle(!!studentId && !loading)}
             >
               {loading ? "확인 중..." : "계속하기 →"}
             </button>
