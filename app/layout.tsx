@@ -18,8 +18,9 @@ export default function RootLayout({
      *     "dark"     — 다크모드
      *     "festival" — 핑크·보라 그라디언트
      *     "sm_blue"  — 상명대 스뮤시그널 스타일 (파랑 계열)
+     *     "chosun"   — 조선시대 주막 컨셉 (한지·먹·단청)
      */
-    <html lang="ko" data-theme="light">
+    <html lang="ko" data-theme="chosun">
       <body>{children}</body>
     </html>
   );
