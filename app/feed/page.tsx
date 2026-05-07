@@ -1,203 +1,483 @@
-'use client'
+"use client";
 
-import { useState, useEffect, useCallback } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect, useCallback, useRef } from "react";
+import { useRouter } from "next/navigation";
 
-type Profile = { id: string; instagram_id: string; department: string | null }
-type FeedState = 'loading' | 'card' | 'empty' | 'error' | 'no_rerolls'
+type Character = "마님" | "아씨" | "돌쇠" | "도령";
+
+type Profile = {
+  id: string;
+  instagram_id: string;
+  department: string | null;
+  name?: string | null;
+  character?: Character;
+};
+
+type FeedState = "loading" | "card" | "empty" | "error" | "no_rerolls";
+
+const CHARACTERS: Character[] = ["마님", "아씨", "돌쇠", "도령"];
+
+// 임시: 서버에서 character/name 안 내려올 때 id 기반 결정적 mock
+const MOCK_NAMES = [
+  "김도윤",
+  "이서연",
+  "박지호",
+  "최민서",
+  "정유진",
+  "강예준",
+  "윤하윤",
+  "장수아",
+  "한지후",
+  "오나윤",
+  "조태민",
+  "서아린",
+];
+function hash(s: string) {
+  let h = 0;
+  for (const c of s) h = (h * 31 + c.charCodeAt(0)) | 0;
+  return Math.abs(h);
+}
+function pickCharacter(id: string): Character {
+  return CHARACTERS[hash(id) % CHARACTERS.length];
+}
+function pickName(id: string) {
+  return MOCK_NAMES[hash(id + "n") % MOCK_NAMES.length];
+}
 
 export default function FeedPage() {
-  const router = useRouter()
-  const [profile, setProfile] = useState<Profile | null>(null)
-  const [balance, setBalance] = useState(0)
-  const [state, setState] = useState<FeedState>('loading')
-  const [flipped, setFlipped] = useState(false)
-  const [cardKey, setCardKey] = useState(0)
+  const router = useRouter();
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [balance, setBalance] = useState<number | null>(null);
+  const [state, setState] = useState<FeedState>("loading");
+  const [cardKey, setCardKey] = useState(0);
+  // StrictMode dev 환경에서 useEffect가 두 번 실행되며
+  // /api/feed/next가 매번 seen_users를 마킹하는 부수효과 때문에
+  // 프로필이 두 번 소비되는 현상을 방지하기 위한 가드.
+  const initialized = useRef(false);
 
   const fetchBalance = useCallback(async () => {
-    const res = await fetch('/api/user/balance')
-    if (res.ok) { const d = await res.json(); setBalance(d.balance ?? 0) }
-  }, [])
-
-  const fetchNext = useCallback(async () => {
-    setState('loading'); setFlipped(false)
-    const res = await fetch('/api/feed/next')
-    const data = await res.json()
-    if (!res.ok) { setState('error'); return }
-    if (data.empty) { setState('empty'); return }
-    setProfile(data.profile); setCardKey(k => k + 1); setState('card')
-  }, [])
-
-  useEffect(() => { fetchBalance(); fetchNext() }, [fetchBalance, fetchNext])
-
-  async function handleReroll() {
-    if (balance <= 0) { setState('no_rerolls'); return }
-    const res = await fetch('/api/feed/reroll', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ current_profile_id: profile?.id }),
-    })
-    const data = await res.json()
-    if (!res.ok) {
-      if (data.code === 'NO_REROLLS_LEFT') { setState('no_rerolls'); return }
-      setState('error'); return
+    const res = await fetch("/api/user/balance");
+    if (res.ok) {
+      const d = await res.json();
+      setBalance(d.balance ?? 0);
     }
-    setBalance(data.remaining)
-    fetchNext()
+  }, []);
+
+  // 초기 로드: 현재 카드가 있으면 그대로 표시, 없으면 1장 차감 후 새 카드.
+  // 잔액 부족이면 needTickets 응답 → no_rerolls 상태.
+  const fetchInitial = useCallback(async () => {
+    setState("loading");
+    const res = await fetch("/api/feed/next");
+    const data = await res.json();
+    if (!res.ok) {
+      setState("error");
+      return;
+    }
+    if (data.needTickets) {
+      setState("no_rerolls");
+      return;
+    }
+    if (data.empty) {
+      setState("empty");
+      return;
+    }
+    setProfile(data.profile);
+    setCardKey((k) => k + 1);
+    setState("card");
+  }, []);
+
+  useEffect(() => {
+    if (initialized.current) return;
+    initialized.current = true;
+    fetchBalance();
+    fetchInitial();
+  }, [fetchBalance, fetchInitial]);
+
+  // 다시 뽑기: 1장 차감 + 새 프로필 한 번에. 응답에 새 profile + remaining 모두 포함됨.
+  async function handleReroll() {
+    if (balance === null) return;
+    if (balance <= 0) {
+      setState("no_rerolls");
+      return;
+    }
+    setState("loading");
+    const res = await fetch("/api/feed/reroll", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ current_profile_id: profile?.id }),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      if (data.code === "NO_REROLLS_LEFT") {
+        setState("no_rerolls");
+        return;
+      }
+      setState("error");
+      return;
+    }
+    if (data.empty) {
+      // 차감 없이 empty 반환됨 — balance 그대로
+      setState("empty");
+      return;
+    }
+    setBalance(data.remaining);
+    setProfile(data.profile);
+    setCardKey((k) => k + 1);
+    setState("card");
   }
 
+  const character = profile
+    ? (profile.character ?? pickCharacter(profile.id))
+    : null;
+  const displayName = profile ? (profile.name ?? pickName(profile.id)) : "";
+
   return (
-    <main className="min-h-screen t-page flex flex-col">
-      <div className="fixed inset-0 pointer-events-none"
-        style={{ background: 'radial-gradient(ellipse at 50% 10%, var(--accent-glow), transparent 60%)' }} />
+    <main className="min-h-screen t-page chosun-body">
+      <div
+        className="fixed inset-0 pointer-events-none"
+        style={{
+          background:
+            "radial-gradient(ellipse at 50% 0%, var(--accent-glow), transparent 55%)",
+        }}
+      />
 
-      {/* 헤더 */}
-      <header className="relative flex items-center justify-between px-6 pt-10 pb-4">
-        <div>
-          <h1 className="font-bold t-accent-text" style={{ fontFamily: "'Gaegu', cursive", fontSize: '1.6rem' }}>
-            축제 인연 찾기
-          </h1>
-          <p className="text-xs t-muted mt-0.5">오늘 축제에서 누군가를 만나보세요 🎪</p>
-        </div>
-        <button onClick={() => router.push('/mypage')}
-          className="w-10 h-10 rounded-full flex items-center justify-center transition-all t-badge"
-          style={{ border: '1px solid var(--border)' }}>
-          <span className="text-lg">👤</span>
-        </button>
-      </header>
+      {/* 컨테이너 */}
+      <div
+        className="relative w-full mx-auto flex flex-col"
+        style={{ maxWidth: 480 }}
+      >
+        {/* 상단 (chosun accent 영역) */}
+        <div className="chosun-layout-top px-6 pt-10 pb-9">
+          {/* 헤더 */}
+          <header className="flex items-center justify-between mb-7">
+            <div className="flex items-center gap-2">
+              <span className="text-xl">🏮</span>
+              <h1
+                className="font-bold t-accent-text chosun-title"
+                style={{ fontSize: "1.4rem", letterSpacing: "-0.01em" }}
+              >
+                오늘의 인연
+              </h1>
+            </div>
+            <button
+              onClick={() => router.push("/mypage")}
+              className="chosun-btn-outline flex items-center justify-center"
+              style={{
+                width: 42,
+                height: 42,
+                borderRadius: 999,
+                fontSize: 17,
+              }}
+            >
+              <span>👤</span>
+            </button>
+          </header>
 
-      {/* 리롤 잔여 뱃지 */}
-      <div className="relative flex justify-center mb-2">
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-medium t-badge"
-          style={{
-            border: '1px solid var(--border-accent)',
-            color: balance > 0 ? 'var(--accent-from)' : 'var(--text-muted)',
-          }}>
-          <span>✨</span>
-          <span>리롤 {balance}회 남음</span>
-        </div>
-      </div>
-
-      {/* 메인 */}
-      <div className="relative flex-1 flex flex-col items-center justify-center px-6 pb-8">
-
-        {state === 'loading' && (
-          <div className="flex flex-col items-center gap-4">
-            <div className="w-14 h-14 rounded-full t-accent-bg animate-pulse" />
-            <p className="text-sm t-muted">인연을 찾는 중...</p>
+          {/* Toss 패턴: 흰 pill + 임베디드 카운터 */}
+          <div className="flex justify-center">
+            <div
+              className="chosun-pill chosun-title"
+              style={{ fontSize: 13, letterSpacing: "0.02em" }}
+            >
+              <span>남은 뽑기권</span>
+              <span
+                className="chosun-pill-count"
+                style={{
+                  background:
+                    (balance ?? 0) > 0
+                      ? "var(--chosun-vermillion)"
+                      : "var(--text-muted)",
+                }}
+              >
+                {balance ?? "—"}
+              </span>
+            </div>
           </div>
-        )}
+        </div>
 
-        {state === 'card' && profile && (
-          <div key={cardKey} className="w-full max-w-sm anim-fade-up">
-            {/* 카드 */}
-            <div className="relative rounded-3xl overflow-hidden cursor-pointer select-none t-card t-card-shadow"
-              style={{ minHeight: 380 }}
-              onClick={() => setFlipped(f => !f)}>
-              {/* 상단 accent 라인 */}
-              <div className="absolute top-0 left-0 right-0 h-1 t-accent-bg" />
+        {/* 하단 (한지 영역) */}
+        <div className="chosun-layout-bottom flex-1 px-6 pt-10 pb-12 mt-1">
+          {state === "loading" && (
+            <div className="flex flex-col items-center justify-center gap-4 py-20">
+              <div className="w-14 h-14 rounded-full t-accent-bg animate-pulse" />
+              <p
+                className="text-sm t-muted chosun-title"
+                style={{ letterSpacing: "0.05em" }}
+              >
+                인연을 부르는 중...
+              </p>
+            </div>
+          )}
 
-              <div className="flex flex-col items-center justify-center p-10 h-full" style={{ minHeight: 380 }}>
-                {!flipped ? (
-                  <div className="flex flex-col items-center gap-5 anim-fade-up">
-                    <div className="w-20 h-20 rounded-full flex items-center justify-center text-4xl"
-                      style={{ background: 'var(--accent-soft)', border: '2px solid var(--border-accent)' }}>
-                      🌸
-                    </div>
-                    <div className="text-center">
-                      <p className="text-xs t-muted mb-2 tracking-widest uppercase">instagram</p>
-                      <p className="font-bold t-accent-text mb-1"
-                        style={{ fontFamily: "'Gaegu', cursive", fontSize: '1.8rem', wordBreak: 'break-all' }}>
-                        @{profile.instagram_id}
-                      </p>
-                      {profile.department && (
-                        <p className="text-sm t-sub mt-1">{profile.department}</p>
-                      )}
-                    </div>
-                    <p className="text-xs t-muted">탭해서 인스타로 이동</p>
+          {state === "card" && profile && character && (
+            <div key={cardKey} className="anim-fade-up">
+              {/* 두루마리 카드 */}
+              <div className="relative">
+                {/* 위 봉 */}
+                <div
+                  className="chosun-rod"
+                  style={{ borderRadius: "2px 2px 0 0" }}
+                />
+
+                {/* 한지 본문 */}
+                <div
+                  className="chosun-paper relative"
+                  style={{
+                    padding: "32px 24px 28px",
+                    borderTop: "none",
+                    borderBottom: "none",
+                    borderLeft: "2px solid var(--border-accent)",
+                    borderRight: "2px solid var(--border-accent)",
+                  }}
+                >
+                  {/* 도장 (오른쪽 상단) */}
+                  <div
+                    className="chosun-seal absolute"
+                    style={{
+                      top: 18,
+                      right: 18,
+                      width: 38,
+                      height: 38,
+                      fontSize: 22,
+                    }}
+                  >
+                    緣
                   </div>
-                ) : (
-                  <div className="flex flex-col items-center gap-5 anim-fade-up">
-                    <div className="text-5xl">💌</div>
-                    <div className="text-center">
-                      <p className="font-bold t-text mb-1"
-                        style={{ fontFamily: "'Gaegu', cursive", fontSize: '1.2rem' }}>
-                        DM 보내볼까요?
-                      </p>
-                      <p className="text-sm t-sub">@{profile.instagram_id}</p>
-                    </div>
-                    <a href={`https://instagram.com/${profile.instagram_id}`}
-                      target="_blank" rel="noopener noreferrer"
-                      className="px-8 py-3 rounded-2xl font-semibold text-sm transition-all active:scale-95 t-accent-bg"
-                      style={{ color: 'var(--accent-text)', boxShadow: 'var(--shadow-btn)' }}
-                      onClick={e => e.stopPropagation()}>
-                      인스타그램 열기 →
-                    </a>
-                    <button onClick={e => { e.stopPropagation(); setFlipped(false) }}
-                      className="text-xs t-muted">돌아가기</button>
+
+                  {/* 캐릭터 라벨 */}
+                  <div className="flex flex-col items-center mb-4">
+                    <p
+                      className="text-xs t-muted mb-1"
+                      style={{
+                        fontFamily: "'Nanum Myeongjo', serif",
+                        letterSpacing: "0.2em",
+                      }}
+                    >
+                      오늘의 손님
+                    </p>
+                    <p
+                      className="chosun-title t-text"
+                      style={{
+                        fontSize: "1.7rem",
+                        letterSpacing: "0.05em",
+                      }}
+                    >
+                      {character}
+                    </p>
                   </div>
-                )}
+
+                  {/* 캐릭터 이미지 자리 */}
+                  <div className="flex justify-center mb-5">
+                    <div
+                      className="chosun-char-frame flex items-center justify-center"
+                      style={{
+                        width: 160,
+                        height: 160,
+                        borderRadius: 6,
+                      }}
+                    >
+                      <p
+                        className="text-xs t-muted text-center px-3"
+                        style={{
+                          fontFamily: "'Nanum Myeongjo', serif",
+                          letterSpacing: "0.1em",
+                        }}
+                      >
+                        {character} 초상
+                        <br />
+                        <span style={{ fontSize: 10, opacity: 0.7 }}>
+                          (이미지 추후 첨부)
+                        </span>
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* 이름 */}
+                  <div className="text-center mb-2">
+                    <p
+                      className="t-text chosun-title"
+                      style={{
+                        fontSize: "1.5rem",
+                        letterSpacing: "0.02em",
+                      }}
+                    >
+                      {displayName}
+                    </p>
+                  </div>
+
+                  {/* 학과 */}
+                  {profile.department && (
+                    <p
+                      className="text-center text-sm t-sub mb-5"
+                      style={{ fontFamily: "'Nanum Myeongjo', serif" }}
+                    >
+                      {profile.department}
+                    </p>
+                  )}
+
+                  {/* 점선 구분 */}
+                  <div className="chosun-divider mb-4" />
+
+                  {/* 인스타 */}
+                  <div className="flex flex-col items-center gap-1 mb-5">
+                    <p
+                      className="text-xs t-muted"
+                      style={{
+                        fontFamily: "'Nanum Myeongjo', serif",
+                        letterSpacing: "0.15em",
+                      }}
+                    >
+                      INSTAGRAM
+                    </p>
+                    <p
+                      className="font-bold t-accent-text chosun-title"
+                      style={{
+                        fontSize: "1.25rem",
+                        wordBreak: "break-all",
+                      }}
+                    >
+                      @{profile.instagram_id}
+                    </p>
+                  </div>
+
+                  {/* 인스타 열기 버튼 */}
+                  <a
+                    href={`https://instagram.com/${profile.instagram_id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="chosun-btn block w-full text-center chosun-title"
+                    style={{
+                      padding: "13px 0",
+                      borderRadius: 10,
+                      fontSize: 15,
+                      letterSpacing: "0.04em",
+                    }}
+                  >
+                    인스타그램 열기 →
+                  </a>
+                </div>
+
+                {/* 아래 봉 */}
+                <div
+                  className="chosun-rod"
+                  style={{ borderRadius: "0 0 2px 2px" }}
+                />
+              </div>
+
+              {/* 다시 뽑기 버튼 */}
+              <div className="mt-7">
+                <button
+                  onClick={handleReroll}
+                  disabled={balance === null}
+                  className="chosun-btn-outline w-full font-semibold flex items-center justify-center gap-2 chosun-title"
+                  style={{
+                    padding: "16px 0",
+                    borderRadius: 12,
+                    fontSize: 14,
+                    letterSpacing: "0.04em",
+                    color:
+                      (balance ?? 0) > 0
+                        ? "var(--chosun-btn-from)"
+                        : "var(--text-muted)",
+                  }}
+                >
+                  <span>🔀</span>
+                  <span>
+                    {balance === null
+                      ? "..."
+                      : balance > 0
+                        ? "다시 뽑기"
+                        : "뽑기권 충전하기"}
+                  </span>
+                </button>
               </div>
             </div>
+          )}
 
-            {/* 리롤 버튼 */}
-            <div className="mt-5">
-              <button onClick={handleReroll}
-                className="w-full py-4 rounded-2xl font-semibold text-sm transition-all active:scale-95 flex items-center justify-center gap-2 t-card"
+          {state === "no_rerolls" && (
+            <div className="w-full text-center space-y-5 py-10">
+              <div className="text-6xl">🪙</div>
+              <div>
+                <p
+                  className="font-bold t-text mb-1 chosun-title"
+                  style={{ fontSize: "1.3rem" }}
+                >
+                  {profile
+                    ? "뽑기권을 모두 사용했어요"
+                    : "뽑기권을 충전해주세요"}
+                </p>
+                <p
+                  className="text-sm t-sub"
+                  style={{ fontFamily: "'Nanum Myeongjo', serif" }}
+                >
+                  뽑기권 1장으로 한 사람의 인스타를 확인할 수 있어요
+                </p>
+              </div>
+              <button
+                onClick={() => router.push("/redeem")}
+                className="chosun-btn w-full chosun-title"
                 style={{
-                  border: `1px solid ${balance > 0 ? 'var(--border-accent)' : 'var(--border)'}`,
-                  color: balance > 0 ? 'var(--accent-from)' : 'var(--text-muted)',
-                }}>
-                <span>🔀</span>
-                <span>{balance > 0 ? '다른 사람 보기' : '리롤 충전하기'}</span>
+                  padding: "16px 0",
+                  borderRadius: 12,
+                  fontSize: 16,
+                  letterSpacing: "0.04em",
+                }}
+              >
+                뽑기권 충전하기 →
+              </button>
+              {profile && (
+                <button
+                  onClick={() => setState("card")}
+                  className="text-sm t-muted hover:t-text transition-colors"
+                  style={{ fontFamily: "'Nanum Myeongjo', serif" }}
+                >
+                  현재 카드 다시 보기
+                </button>
+              )}
+            </div>
+          )}
+
+          {state === "empty" && (
+            <div className="text-center space-y-3 py-16">
+              <div className="text-6xl">🏮</div>
+              <p
+                className="font-bold t-text chosun-title"
+                style={{ fontSize: "1.3rem" }}
+              >
+                모든 인연을 만나보셨어요
+              </p>
+              <p
+                className="text-sm t-sub"
+                style={{ fontFamily: "'Nanum Myeongjo', serif" }}
+              >
+                축제에서 직접 만나보는 건 어떨까요
+              </p>
+            </div>
+          )}
+
+          {state === "error" && (
+            <div className="text-center space-y-4 py-16">
+              <div className="text-5xl">😥</div>
+              <p
+                className="text-sm t-sub"
+                style={{ fontFamily: "'Nanum Myeongjo', serif" }}
+              >
+                오류가 발생했어요
+              </p>
+              <button
+                onClick={fetchInitial}
+                className="chosun-btn-outline px-6 py-2 chosun-title"
+                style={{
+                  borderRadius: 999,
+                  fontSize: 13,
+                }}
+              >
+                다시 시도
               </button>
             </div>
-          </div>
-        )}
-
-        {state === 'no_rerolls' && (
-          <div className="w-full max-w-sm text-center space-y-5">
-            <div className="text-6xl">🪙</div>
-            <div>
-              <p className="font-bold t-text mb-1"
-                style={{ fontFamily: "'Gaegu', cursive", fontSize: '1.3rem' }}>
-                리롤을 모두 사용했어요
-              </p>
-              <p className="text-sm t-sub">패키지를 구매하고 더 많은 인연을 만나보세요</p>
-            </div>
-            <button onClick={() => router.push('/payment/select')}
-              className="w-full py-4 rounded-2xl font-semibold t-accent-bg transition-all active:scale-95"
-              style={{ color: 'var(--accent-text)', boxShadow: 'var(--shadow-btn)' }}>
-              리롤 패키지 구경하기 ✨
-            </button>
-            <button onClick={() => setState('card')} className="text-sm t-muted">
-              현재 카드 다시 보기
-            </button>
-          </div>
-        )}
-
-        {state === 'empty' && (
-          <div className="text-center space-y-3">
-            <div className="text-6xl">🎪</div>
-            <p className="font-bold t-text" style={{ fontFamily: "'Gaegu', cursive", fontSize: '1.3rem' }}>
-              모든 인연을 확인했어요!
-            </p>
-            <p className="text-sm t-sub">축제에서 직접 만나보는 건 어떨까요 😊</p>
-          </div>
-        )}
-
-        {state === 'error' && (
-          <div className="text-center space-y-4">
-            <div className="text-5xl">😥</div>
-            <p className="text-sm t-sub">오류가 발생했어요</p>
-            <button onClick={fetchNext}
-              className="px-6 py-2 rounded-xl text-sm t-card t-sub"
-              style={{ border: '1px solid var(--border)' }}>
-              다시 시도
-            </button>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </main>
-  )
+  );
 }

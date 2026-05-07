@@ -23,12 +23,14 @@ export async function POST(request: NextRequest) {
 
   const supabase = await createClient();
 
+  // 요청 origin에서 자동으로 콜백 URL 생성 — dev / Vercel preview / 프로덕션 모두 동작.
+  // Supabase Auth → URL Configuration → Redirect URLs 화이트리스트에
+  // 사용할 도메인을 등록해두어야 함 (예: https://yourdomain.com/auth/callback).
   const { error } = await supabase.auth.signInWithOtp({
     email,
     options: {
       shouldCreateUser: true,
-      // Magic Link 클릭 시 리다이렉트될 주소
-      emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`,
+      emailRedirectTo: `${request.nextUrl.origin}/auth/callback`,
     },
   });
 

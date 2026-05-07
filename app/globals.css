@@ -1,95 +1,606 @@
-@import url('https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&family=Noto+Sans+KR:wght@400;500;600&display=swap');
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import url("https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&family=Noto+Sans+KR:wght@400;500;600&family=Pretendard:wght@400;500;600;700&family=Nanum+Myeongjo:wght@400;700;800&family=Gowun+Batang:wght@400;700&display=swap");
+@import "tailwindcss";
 
 /* ================================================
    테마 변수 — data-theme 속성 하나로 전체 앱 변경
    layout.tsx의 <html data-theme="light"> 만 바꾸면 됨
-   옵션: "light" | "dark" | "festival"
+   옵션: "light" | "dark" | "festival" | "sm_blue" | "chosun"
    ================================================ */
 
 [data-theme="light"] {
-  --bg-page:        #ffffff;
-  --bg-card:        #f9f9f7;
-  --bg-card-hover:  #f2f1ee;
-  --bg-badge:       #f3f2ef;
-  --border:         #e8e7e3;
-  --border-accent:  #d4d2cc;
-  --text-primary:   #1a1a18;
+  --bg-page: #ffffff;
+  --bg-card: #f9f9f7;
+  --bg-card-hover: #f2f1ee;
+  --bg-badge: #f3f2ef;
+  --border: #e8e7e3;
+  --border-accent: #d4d2cc;
+  --text-primary: #1a1a18;
   --text-secondary: #6b6a66;
-  --text-muted:     #a8a7a3;
-  --accent-from:    #e8545a;
-  --accent-to:      #c2396e;
-  --accent-text:    #ffffff;
-  --accent-soft:    rgba(232, 84, 90, 0.08);
-  --accent-glow:    rgba(232, 84, 90, 0.15);
-  --shadow-card:    0 2px 16px rgba(0,0,0,0.06), 0 1px 4px rgba(0,0,0,0.04);
-  --shadow-btn:     0 4px 16px rgba(232, 84, 90, 0.25);
-  --deco-opacity:   0.06;
+  --text-muted: #a8a7a3;
+  --accent-from: #e8545a;
+  --accent-to: #c2396e;
+  --accent-text: #ffffff;
+  --accent-soft: rgba(232, 84, 90, 0.08);
+  --accent-glow: rgba(232, 84, 90, 0.15);
+  --shadow-card: 0 2px 16px rgba(0, 0, 0, 0.06), 0 1px 4px rgba(0, 0, 0, 0.04);
+  --shadow-btn: 0 4px 16px rgba(232, 84, 90, 0.25);
+  --deco-opacity: 0.06;
 }
 
 [data-theme="dark"] {
-  --bg-page:        #0f0f0e;
-  --bg-card:        #1a1a18;
-  --bg-card-hover:  #222220;
-  --bg-badge:       #242422;
-  --border:         #2a2a28;
-  --border-accent:  #3a3a38;
-  --text-primary:   #eeecea;
+  --bg-page: #0f0f0e;
+  --bg-card: #1a1a18;
+  --bg-card-hover: #222220;
+  --bg-badge: #242422;
+  --border: #2a2a28;
+  --border-accent: #3a3a38;
+  --text-primary: #eeecea;
   --text-secondary: #8a8a86;
-  --text-muted:     #5a5a58;
-  --accent-from:    #f472b6;
-  --accent-to:      #a855f7;
-  --accent-text:    #ffffff;
-  --accent-soft:    rgba(244, 114, 182, 0.08);
-  --accent-glow:    rgba(244, 114, 182, 0.12);
-  --shadow-card:    0 2px 24px rgba(0,0,0,0.4);
-  --shadow-btn:     0 4px 20px rgba(168, 85, 247, 0.3);
-  --deco-opacity:   0.12;
+  --text-muted: #5a5a58;
+  --accent-from: #f472b6;
+  --accent-to: #a855f7;
+  --accent-text: #ffffff;
+  --accent-soft: rgba(244, 114, 182, 0.08);
+  --accent-glow: rgba(244, 114, 182, 0.12);
+  --shadow-card: 0 2px 24px rgba(0, 0, 0, 0.4);
+  --shadow-btn: 0 4px 20px rgba(168, 85, 247, 0.3);
+  --deco-opacity: 0.12;
 }
 
 [data-theme="festival"] {
-  --bg-page:        #fdf4ff;
-  --bg-card:        rgba(255,255,255,0.75);
-  --bg-card-hover:  rgba(255,255,255,0.9);
-  --bg-badge:       rgba(244,114,182,0.08);
-  --border:         rgba(244,114,182,0.15);
-  --border-accent:  rgba(168,85,247,0.25);
-  --text-primary:   #2d1a3d;
+  --bg-page: #fdf4ff;
+  --bg-card: rgba(255, 255, 255, 0.75);
+  --bg-card-hover: rgba(255, 255, 255, 0.9);
+  --bg-badge: rgba(244, 114, 182, 0.08);
+  --border: rgba(244, 114, 182, 0.15);
+  --border-accent: rgba(168, 85, 247, 0.25);
+  --text-primary: #2d1a3d;
   --text-secondary: #7c5c8a;
-  --text-muted:     #b49cc0;
-  --accent-from:    #f472b6;
-  --accent-to:      #a855f7;
-  --accent-text:    #ffffff;
-  --accent-soft:    rgba(244, 114, 182, 0.1);
-  --accent-glow:    rgba(168, 85, 247, 0.2);
-  --shadow-card:    0 8px 32px rgba(168,85,247,0.12), 0 2px 8px rgba(244,114,182,0.08);
-  --shadow-btn:     0 4px 20px rgba(168, 85, 247, 0.35);
-  --deco-opacity:   0.18;
+  --text-muted: #b49cc0;
+  --accent-from: #f472b6;
+  --accent-to: #a855f7;
+  --accent-text: #ffffff;
+  --accent-soft: rgba(244, 114, 182, 0.1);
+  --accent-glow: rgba(168, 85, 247, 0.2);
+  --shadow-card:
+    0 8px 32px rgba(168, 85, 247, 0.12), 0 2px 8px rgba(244, 114, 182, 0.08);
+  --shadow-btn: 0 4px 20px rgba(168, 85, 247, 0.35);
+  --deco-opacity: 0.18;
+}
+
+/* ================================================
+   sm_blue 테마
+   상명대 스뮤시그널 서비스 UI 스타일 기반
+   메인: #4364F7 파랑 / 보조: #664BFF 보라
+   배경: 흰색 + 파란 상단 구조
+   버튼: rounded-[32px] 알약형
+   폰트: Pretendard
+   ================================================ */
+[data-theme="sm_blue"] {
+  --bg-page: #ffffff;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f0f4ff;
+  --bg-badge: #e1eaf8;
+  --border: #e8edf5;
+  --border-accent: #b4c8f0;
+  --text-primary: #111827;
+  --text-secondary: #4b5563;
+  --text-muted: #9ca3af;
+  --accent-from: #4364f7;
+  --accent-to: #3c57e8;
+  --accent-text: #ffffff;
+  --accent-soft: rgba(67, 100, 247, 0.08);
+  --accent-glow: rgba(67, 100, 247, 0.15);
+  --shadow-card:
+    0 2px 16px rgba(67, 100, 247, 0.08), 0 1px 4px rgba(0, 0, 0, 0.04);
+  --shadow-btn: 0 4px 16px rgba(67, 100, 247, 0.35);
+  --deco-opacity: 0.08;
+
+  /* sm_blue 전용 추가 변수 */
+  --sm-blue-main: #4364f7;
+  --sm-blue-dark: #3c57e8;
+  --sm-blue-bg: #4b66ff; /* 상단 헤더 배경 */
+  --sm-blue-sub: #664bff; /* 보라 포인트 */
+  --sm-blue-light: #b4cff5; /* 연한 파랑 텍스트 */
+  --sm-blue-inactive: #e1eaf8; /* 비활성 버튼 */
+  --sm-blue-card-radius: 32px; /* 큰 둥근 모서리 */
+}
+
+/* sm_blue 전용 컴포넌트 클래스 */
+[data-theme="sm_blue"] body {
+  font-family: "Pretendard", "Noto Sans KR", sans-serif;
+}
+
+/* 상단 파랑 + 하단 흰색 레이아웃 */
+.sm-layout {
+  background: var(--sm-blue-bg);
+  min-height: 100vh;
+}
+.sm-layout-bottom {
+  background: white;
+  border-radius: 24px 24px 0 0;
+  flex: 1;
+}
+
+/* 알약형 버튼 */
+[data-theme="sm_blue"] .t-accent-bg {
+  background: var(--sm-blue-main);
+  border-radius: 32px;
+}
+
+/* 카드 스타일 */
+[data-theme="sm_blue"] .t-card {
+  background-color: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: var(--sm-blue-card-radius);
+  box-shadow: var(--shadow-card);
+}
+
+/* 헤더 영역 파란 배경 */
+.sm-header {
+  background: var(--sm-blue-bg);
+  color: white;
+  padding: 40px 20px 24px;
+}
+
+/* 보라 포인트 카드 */
+.sm-card-purple {
+  background: var(--sm-blue-sub);
+  border-radius: var(--sm-blue-card-radius);
+  color: white;
+}
+
+/* 파랑 포인트 카드 */
+.sm-card-blue {
+  background: var(--sm-blue-dark);
+  border-radius: var(--sm-blue-card-radius);
+  color: white;
+}
+
+/* 비활성 버튼 */
+.sm-btn-inactive {
+  background: var(--sm-blue-inactive);
+  color: white;
+  border-radius: 32px;
+  cursor: not-allowed;
+}
+
+/* 활성 버튼 */
+.sm-btn-active {
+  background: var(--sm-blue-main);
+  color: white;
+  border-radius: 32px;
+  box-shadow: var(--shadow-btn);
+  cursor: pointer;
+}
+
+/* ================================================
+   chosun 테마
+   조선시대 주막 컨셉
+   메인: 단청 적색 #a0211a / 보조: 황금 #d4842c
+   배경: 한지 미색 / 텍스트: 먹색
+   폰트: Nanum Myeongjo (제목) / Gowun Batang (본문)
+   ================================================ */
+[data-theme="chosun"] {
+  --bg-page: #f3e6c4;
+  --bg-card: #fbf3d9;
+  --bg-card-hover: #f5e9bf;
+  --bg-badge: #ead8a8;
+  --border: #c79a5c;
+  --border-accent: #8b4513;
+  --text-primary: #2c1810;
+  --text-secondary: #5d3a1f;
+  --text-muted: #9a7a52;
+  --accent-from: #a0211a;
+  --accent-to: #d4842c;
+  --accent-text: #fdf6e3;
+  --accent-soft: rgba(160, 33, 26, 0.08);
+  --accent-glow: rgba(212, 132, 44, 0.18);
+  --shadow-card:
+    0 2px 12px rgba(91, 60, 40, 0.18), 0 1px 4px rgba(91, 60, 40, 0.1);
+  --shadow-btn: 0 4px 14px rgba(160, 33, 26, 0.3);
+  --deco-opacity: 0.1;
+
+  /* chosun 전용 변수 */
+  --chosun-vermillion: #a0211a; /* 단청 적색 (도장 색) */
+  --chosun-gold: #d4842c; /* 황금/주황 */
+  --chosun-jade: #2d5a4f; /* 청록 */
+  --chosun-wood: #8b5a2b; /* 갈색 (두루마리 봉) */
+  --chosun-paper-line: rgba(91, 60, 40, 0.05); /* 한지 줄무늬 */
+
+  /* 버튼 색 — 한지 톤과 통일된 갈색 그라디언트 */
+  --chosun-btn-from: #8b5a2b;
+  --chosun-btn-to: #5d3a1f;
+  --chosun-btn-border: #4a2d15;
+  --chosun-btn-shadow: 0 4px 14px rgba(91, 60, 40, 0.3);
+}
+
+[data-theme="chosun"] body {
+  font-family: "Gowun Batang", "Nanum Myeongjo", "Noto Serif KR", serif;
+  background-color: var(--bg-page);
+  background-image:
+    radial-gradient(
+      circle at 18% 24%,
+      rgba(160, 33, 26, 0.045) 1px,
+      transparent 1.5px
+    ),
+    radial-gradient(
+      circle at 72% 78%,
+      rgba(212, 132, 44, 0.04) 1px,
+      transparent 1.5px
+    );
+  background-size:
+    28px 28px,
+    36px 36px;
+}
+
+/* 한지 카드 — 가로줄 텍스처 */
+.chosun-paper {
+  background-color: var(--bg-card);
+  background-image: repeating-linear-gradient(
+    0deg,
+    transparent 0,
+    transparent 22px,
+    var(--chosun-paper-line) 22px,
+    var(--chosun-paper-line) 23px
+  );
+  border: 1px solid var(--border);
+}
+
+/* 두루마리 봉 (위/아래 띠) */
+.chosun-rod {
+  position: relative;
+  height: 16px;
+  background: linear-gradient(
+    to bottom,
+    #b87838 0%,
+    var(--chosun-wood) 50%,
+    #5e3a1c 100%
+  );
+  border-top: 1px solid #9a6633;
+  border-bottom: 1px solid #4a2d15;
+}
+.chosun-rod::before,
+.chosun-rod::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 8px;
+  height: 24px;
+  background: linear-gradient(to right, #5e3a1c, var(--chosun-wood), #5e3a1c);
+  border-radius: 2px;
+  transform: translateY(-50%);
+}
+.chosun-rod::before {
+  left: -4px;
+}
+.chosun-rod::after {
+  right: -4px;
+}
+
+/* 도장 (낙관) */
+.chosun-seal {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--chosun-vermillion);
+  color: var(--accent-text);
+  font-family: "Nanum Myeongjo", serif;
+  font-weight: 800;
+  border-radius: 4px;
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.18),
+    inset 0 0 0 2px rgba(253, 246, 227, 0.25);
+  letter-spacing: -0.04em;
+  transform: rotate(-3deg);
+  user-select: none;
+}
+
+/* 큰 한자 강조 */
+.chosun-han {
+  font-family: "Nanum Myeongjo", serif;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+}
+
+/* 캐릭터 자리 (placeholder) */
+.chosun-char-frame {
+  position: relative;
+  background:
+    linear-gradient(135deg, rgba(160, 33, 26, 0.05), rgba(212, 132, 44, 0.07)),
+    var(--bg-page);
+  border: 2px solid var(--border-accent);
+  overflow: hidden;
+}
+.chosun-char-frame::before {
+  content: "";
+  position: absolute;
+  inset: 5px;
+  border: 1px solid var(--border);
+  pointer-events: none;
+}
+
+/* 점선 구분선 (한지에 그린 선) */
+.chosun-divider {
+  height: 1px;
+  background-image: linear-gradient(
+    to right,
+    transparent 0%,
+    var(--border-accent) 20%,
+    var(--border-accent) 80%,
+    transparent 100%
+  );
+  opacity: 0.5;
+}
+
+/* 글씨 강조 */
+[data-theme="chosun"] .chosun-title {
+  font-family: "Nanum Myeongjo", serif;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.25;
+}
+[data-theme="chosun"] .chosun-body {
+  font-family: "Gowun Batang", serif;
+  letter-spacing: -0.01em;
+}
+
+/* ─── chosun 인터랙션 클래스 ─── */
+
+/* CTA 솔리드 버튼 (한지 톤 갈색 그라디언트) */
+.chosun-btn {
+  position: relative;
+  background: linear-gradient(
+    135deg,
+    var(--chosun-btn-from),
+    var(--chosun-btn-to)
+  );
+  color: var(--accent-text);
+  border: 2px solid var(--chosun-btn-border);
+  box-shadow: var(--chosun-btn-shadow);
+  cursor: pointer;
+  transform-origin: center;
+  transition:
+    transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 0.2s ease,
+    filter 0.2s ease;
+}
+.chosun-btn:hover {
+  transform: scale(1.05);
+  z-index: 5;
+  box-shadow:
+    0 8px 22px rgba(91, 60, 40, 0.35),
+    0 2px 6px rgba(91, 60, 40, 0.18);
+  filter: brightness(1.08);
+}
+.chosun-btn:active {
+  transform: scale(1.04);
+}
+.chosun-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+  filter: grayscale(0.3);
+}
+
+/* 보조 버튼 (한지 위 갈색 외곽선) */
+.chosun-btn-outline {
+  position: relative;
+  background: var(--bg-card);
+  color: var(--text-primary);
+  border: 2px solid var(--border-accent);
+  cursor: pointer;
+  transform-origin: center;
+  transition:
+    transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1),
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    color 0.2s ease;
+}
+.chosun-btn-outline:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--chosun-btn-from);
+  color: var(--chosun-btn-from);
+  transform: scale(1.1);
+  z-index: 5;
+  box-shadow: 0 6px 16px rgba(91, 60, 40, 0.2);
+}
+.chosun-btn-outline:active {
+  transform: scale(1.04);
+}
+
+/* hover lift 카드 (단계 카드, 패키지 항목 등) — 카드는 살짝 작게 */
+.chosun-card-hover {
+  position: relative;
+  cursor: pointer;
+  transform-origin: center;
+  transition:
+    transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
+}
+.chosun-card-hover:hover {
+  transform: scale(1.04);
+  z-index: 5;
+  border-color: var(--border-accent);
+  box-shadow:
+    0 8px 22px rgba(91, 60, 40, 0.22),
+    0 2px 6px rgba(91, 60, 40, 0.12);
+}
+.chosun-card-hover:active {
+  transform: scale(1.02);
+}
+
+/* Toss 패턴 — 흰 pill + 임베디드 카운터 */
+.chosun-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px;
+  background: var(--bg-card);
+  border: 2px solid var(--border-accent);
+  border-radius: 999px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.chosun-pill-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  padding: 2px 12px;
+  background: var(--chosun-vermillion);
+  color: var(--accent-text);
+  border-radius: 999px;
+  font-family: "Nanum Myeongjo", serif;
+  font-weight: 800;
+  font-size: 14px;
+}
+
+/* 두 톤 레이아웃 (상단 어두운 한지 + 하단 밝은 한지) */
+.chosun-layout-top {
+  background: linear-gradient(
+    180deg,
+    rgba(160, 33, 26, 0.08) 0%,
+    rgba(212, 132, 44, 0.06) 100%
+  );
+  border-bottom: 2px solid var(--border-accent);
+}
+.chosun-layout-bottom {
+  background: var(--bg-card);
+  border-radius: 24px 24px 0 0;
+  border: 2px solid var(--border);
+  border-bottom: none;
+  flex: 1;
+  position: relative;
+}
+.chosun-layout-bottom::before {
+  content: "";
+  position: absolute;
+  top: -1px;
+  left: 24px;
+  right: 24px;
+  height: 4px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--chosun-vermillion),
+    var(--chosun-gold),
+    var(--chosun-vermillion),
+    transparent
+  );
+  border-radius: 999px;
+  opacity: 0.4;
+}
+
+/* 강한 외곽선 카드 */
+.chosun-bordered {
+  background: var(--bg-card);
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  transition: border-color 0.2s ease;
+}
+.chosun-bordered:hover {
+  border-color: var(--border-accent);
+}
+
+/* 섹션 액션 카드 (CTA 카드형, 갈색 그라디언트) */
+.chosun-action-card {
+  position: relative;
+  background: linear-gradient(
+    135deg,
+    var(--chosun-btn-from),
+    var(--chosun-btn-to)
+  );
+  color: var(--accent-text);
+  border: 2px solid var(--chosun-btn-border);
+  border-radius: 20px;
+  padding: 18px 20px;
+  cursor: pointer;
+  transform-origin: center;
+  transition:
+    transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 0.2s ease,
+    filter 0.2s ease;
+  box-shadow: var(--shadow-card);
+}
+.chosun-action-card:hover {
+  transform: scale(1.04);
+  z-index: 5;
+  filter: brightness(1.08);
+  box-shadow:
+    0 10px 26px rgba(91, 60, 40, 0.28),
+    0 2px 6px rgba(91, 60, 40, 0.15);
+}
+.chosun-action-card:active {
+  transform: scale(1.02);
+}
+
+/* 리롤 뱃지 */
+.sm-reroll-badge {
+  background: white;
+  color: #111827;
+  border-radius: 32px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.sm-reroll-count {
+  background: var(--sm-blue-main);
+  color: white;
+  border-radius: 32px;
+  padding: 2px 12px;
+  font-weight: 700;
+  font-size: 14px;
 }
 
 /* ================================================
    전역 기본값
    ================================================ */
-* { box-sizing: border-box; margin: 0; padding: 0; }
+@layer base {
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+}
 
 body {
   background-color: var(--bg-page);
   color: var(--text-primary);
-  font-family: 'Noto Sans KR', sans-serif;
-  transition: background-color 0.3s ease, color 0.3s ease;
+  font-family: "Noto Sans KR", sans-serif;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
   -webkit-font-smoothing: antialiased;
 }
 
 /* 공통 유틸 클래스 */
-.t-page    { background-color: var(--bg-page); }
-.t-card    { background-color: var(--bg-card); border: 1px solid var(--border); }
-.t-text    { color: var(--text-primary); }
-.t-sub     { color: var(--text-secondary); }
-.t-muted   { color: var(--text-muted); }
-.t-border  { border-color: var(--border); }
-.t-badge   { background-color: var(--bg-badge); }
+.t-page {
+  background-color: var(--bg-page);
+}
+.t-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border);
+}
+.t-text {
+  color: var(--text-primary);
+}
+.t-sub {
+  color: var(--text-secondary);
+}
+.t-muted {
+  color: var(--text-muted);
+}
+.t-border {
+  border-color: var(--border);
+}
+.t-badge {
+  background-color: var(--bg-badge);
+}
 
 .t-accent-bg {
   background: linear-gradient(135deg, var(--accent-from), var(--accent-to));
@@ -100,15 +611,30 @@ body {
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
-.t-accent-border { border-color: var(--border-accent); }
-.t-btn-shadow    { box-shadow: var(--shadow-btn); }
-.t-card-shadow   { box-shadow: var(--shadow-card); }
+.t-accent-border {
+  border-color: var(--border-accent);
+}
+.t-btn-shadow {
+  box-shadow: var(--shadow-btn);
+}
+.t-card-shadow {
+  box-shadow: var(--shadow-card);
+}
 
 /* 플로팅 이모지 애니메이션 */
 @keyframes float-up {
-  0%   { transform: translateY(0px) rotate(0deg);   opacity: var(--deco-opacity); }
-  50%  { transform: translateY(-20px) rotate(8deg); opacity: calc(var(--deco-opacity) * 1.5); }
-  100% { transform: translateY(0px) rotate(0deg);   opacity: var(--deco-opacity); }
+  0% {
+    transform: translateY(0px) rotate(0deg);
+    opacity: var(--deco-opacity);
+  }
+  50% {
+    transform: translateY(-20px) rotate(8deg);
+    opacity: calc(var(--deco-opacity) * 1.5);
+  }
+  100% {
+    transform: translateY(0px) rotate(0deg);
+    opacity: var(--deco-opacity);
+  }
 }
 .floating-emoji {
   animation: float-up var(--dur, 8s) ease-in-out infinite;
@@ -117,11 +643,27 @@ body {
 
 /* 페이드인 */
 @keyframes fade-up {
-  from { opacity: 0; transform: translateY(16px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
-.anim-fade-up { animation: fade-up 0.5s cubic-bezier(0.16,1,0.3,1) both; }
-.anim-delay-1 { animation-delay: 0.1s; }
-.anim-delay-2 { animation-delay: 0.2s; }
-.anim-delay-3 { animation-delay: 0.32s; }
-.anim-delay-4 { animation-delay: 0.44s; }
+.anim-fade-up {
+  animation: fade-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.anim-delay-1 {
+  animation-delay: 0.1s;
+}
+.anim-delay-2 {
+  animation-delay: 0.2s;
+}
+.anim-delay-3 {
+  animation-delay: 0.32s;
+}
+.anim-delay-4 {
+  animation-delay: 0.44s;
+}

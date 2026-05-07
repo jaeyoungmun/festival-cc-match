@@ -11,7 +11,6 @@ type Profile = {
   department: string | null;
   gender: string;
   email: string;
-  is_visible: boolean;
 };
 
 type Section = "main" | "edit" | "delete-confirm";
@@ -25,7 +24,6 @@ export default function MyPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
-  // 편집 폼 상태
   const [editInsta, setEditInsta] = useState("");
   const [editDept, setEditDept] = useState("");
 
@@ -59,17 +57,6 @@ export default function MyPage() {
     }
     load();
   }, [router]);
-
-  async function handleToggleVisible() {
-    if (!profile) return;
-    const next = !profile.is_visible;
-    setProfile((p) => (p ? { ...p, is_visible: next } : p));
-    await fetch("/api/user/profile", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ is_visible: next }),
-    });
-  }
 
   async function handleSaveEdit(e: React.FormEvent) {
     e.preventDefault();
@@ -118,7 +105,7 @@ export default function MyPage() {
   }
 
   return (
-    <main className="min-h-screen t-page relative overflow-hidden">
+    <main className="min-h-screen t-page relative overflow-hidden chosun-body">
       <div
         className="fixed inset-0 pointer-events-none"
         style={{
@@ -128,23 +115,28 @@ export default function MyPage() {
       />
 
       <div
-        className="relative"
-        style={{ maxWidth: 480, margin: "0 auto", padding: "0 20px 40px" }}
+        className="relative w-full mx-auto flex flex-col"
+        style={{ maxWidth: 480 }}
       >
         {/* 헤더 */}
-        <header className="flex items-center gap-3 pt-10 pb-6">
+        <header className="flex items-center gap-3 px-6 pt-9 pb-5">
           <button
             onClick={() =>
               section === "main" ? router.push("/feed") : setSection("main")
             }
-            className="w-9 h-9 rounded-full flex items-center justify-center t-badge transition-all active:scale-95"
-            style={{ border: "1px solid var(--border)" }}
+            className="chosun-btn-outline flex items-center justify-center"
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: 999,
+              fontSize: 15,
+            }}
           >
-            <span style={{ fontSize: 16 }}>←</span>
+            <span>←</span>
           </button>
           <h1
-            className="font-bold t-text"
-            style={{ fontFamily: "'Gaegu', cursive", fontSize: "1.5rem" }}
+            className="font-bold t-text chosun-title"
+            style={{ fontSize: "1.4rem", letterSpacing: "-0.01em" }}
           >
             {section === "edit"
               ? "프로필 수정"
@@ -156,29 +148,37 @@ export default function MyPage() {
 
         {/* ── 메인 섹션 ── */}
         {section === "main" && profile && (
-          <div className="space-y-3 anim-fade-up">
+          <div className="px-6 pb-10 space-y-4 anim-fade-up">
             {/* 프로필 카드 */}
-            <div className="t-card t-card-shadow rounded-3xl overflow-hidden">
-              {/* 상단 accent 라인 */}
-              <div className="h-1 t-accent-bg" />
-              <div className="p-6">
+            <div
+              className="chosun-bordered overflow-hidden"
+              style={{ borderRadius: 18 }}
+            >
+              <div
+                className="h-1"
+                style={{
+                  background:
+                    "linear-gradient(90deg, var(--chosun-vermillion), var(--chosun-gold))",
+                }}
+              />
+              <div style={{ padding: "22px" }}>
                 <div className="flex items-center gap-4 mb-5">
                   <div
-                    className="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0"
+                    className="flex items-center justify-center text-3xl flex-shrink-0"
                     style={{
+                      width: 64,
+                      height: 64,
+                      borderRadius: 12,
                       background: "var(--accent-soft)",
-                      border: "1px solid var(--border-accent)",
+                      border: "2px solid var(--border-accent)",
                     }}
                   >
                     {profile.gender === "male" ? "🙋‍♂️" : "🙋‍♀️"}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p
-                      className="font-bold t-accent-text truncate"
-                      style={{
-                        fontFamily: "'Gaegu', cursive",
-                        fontSize: "1.4rem",
-                      }}
+                      className="font-bold t-accent-text truncate chosun-title"
+                      style={{ fontSize: "1.3rem", letterSpacing: "-0.01em" }}
                     >
                       @{profile.instagram_id}
                     </p>
@@ -188,88 +188,46 @@ export default function MyPage() {
                   </div>
                 </div>
 
-                {/* 리롤 잔여 */}
+                {/* 뽑기권 잔여 */}
                 <div
-                  className="flex items-center justify-between p-3 rounded-2xl mb-4"
+                  className="flex items-center justify-between p-3"
                   style={{
+                    borderRadius: 12,
                     background: "var(--accent-soft)",
-                    border: "1px solid var(--border-accent)",
+                    border: "1.5px solid var(--border-accent)",
                   }}
                 >
                   <div className="flex items-center gap-2">
-                    <span>✨</span>
-                    <span className="text-sm font-medium t-text">
-                      리롤 잔여
+                    <span>🪙</span>
+                    <span className="text-sm font-medium t-text chosun-title">
+                      뽑기권 잔여
                     </span>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-3">
                     <span
-                      className="font-bold t-accent-text"
-                      style={{
-                        fontSize: "1.1rem",
-                        fontFamily: "'Gaegu', cursive",
-                      }}
+                      className="font-bold t-accent-text chosun-title"
+                      style={{ fontSize: "1.05rem" }}
                     >
-                      {balance}회
+                      {balance}장
                     </span>
                     <button
-                      onClick={() => router.push("/payment/select")}
-                      className="text-xs px-3 py-1 rounded-full font-medium"
+                      onClick={() => router.push("/redeem")}
+                      className="chosun-btn chosun-title"
                       style={{
-                        background:
-                          "linear-gradient(135deg, var(--accent-from), var(--accent-to))",
-                        color: "var(--accent-text)",
+                        fontSize: 12,
+                        padding: "5px 14px",
+                        borderRadius: 999,
+                        letterSpacing: "0.04em",
                       }}
                     >
                       충전
                     </button>
                   </div>
                 </div>
-
-                {/* 공개 토글 */}
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium t-text">피드 공개</p>
-                    <p className="text-xs t-muted mt-0.5">
-                      {profile.is_visible
-                        ? "이성에게 내 계정이 보여요"
-                        : "내 계정이 숨겨진 상태예요"}
-                    </p>
-                  </div>
-                  {/* 토글 스위치 */}
-                  <button
-                    onClick={handleToggleVisible}
-                    className="relative transition-all active:scale-95"
-                    style={{
-                      width: 52,
-                      height: 28,
-                      borderRadius: 14,
-                      background: profile.is_visible
-                        ? "linear-gradient(135deg, var(--accent-from), var(--accent-to))"
-                        : "var(--bg-card-hover)",
-                      border: `1px solid ${profile.is_visible ? "transparent" : "var(--border)"}`,
-                      boxShadow: profile.is_visible
-                        ? "var(--shadow-btn)"
-                        : "none",
-                    }}
-                  >
-                    <span
-                      className="absolute top-1 transition-all"
-                      style={{
-                        width: 20,
-                        height: 20,
-                        borderRadius: "50%",
-                        background: "white",
-                        left: profile.is_visible ? 28 : 4,
-                        boxShadow: "0 1px 4px rgba(0,0,0,0.2)",
-                      }}
-                    />
-                  </button>
-                </div>
               </div>
             </div>
 
-            {/* 메뉴 목록 */}
+            {/* 메뉴 */}
             {[
               {
                 icon: "✏️",
@@ -278,26 +236,38 @@ export default function MyPage() {
                 action: () => setSection("edit"),
               },
               {
-                icon: "💳",
-                label: "리롤 충전",
-                sub: "패키지 구매하기",
-                action: () => router.push("/payment/select"),
+                icon: "🪙",
+                label: "뽑기권 충전",
+                sub: "부스에서 받은 코드 입력",
+                action: () => router.push("/redeem"),
               },
             ].map((item, i) => (
               <button
                 key={i}
                 onClick={item.action}
-                className="w-full flex items-center gap-4 t-card t-card-shadow rounded-2xl transition-all active:scale-[0.99]"
-                style={{ padding: "16px 20px" }}
+                className="chosun-bordered chosun-card-hover w-full flex items-center gap-4 text-left"
+                style={{
+                  padding: "18px 20px",
+                  borderRadius: 14,
+                  cursor: "pointer",
+                }}
               >
                 <div
-                  className="w-10 h-10 rounded-xl flex items-center justify-center text-xl flex-shrink-0"
-                  style={{ background: "var(--accent-soft)" }}
+                  className="flex items-center justify-center text-xl flex-shrink-0"
+                  style={{
+                    width: 44,
+                    height: 44,
+                    borderRadius: 10,
+                    background: "var(--accent-soft)",
+                    border: "1.5px solid var(--border-accent)",
+                  }}
                 >
                   {item.icon}
                 </div>
-                <div className="flex-1 text-left">
-                  <p className="text-sm font-semibold t-text">{item.label}</p>
+                <div className="flex-1">
+                  <p className="text-sm font-semibold t-text chosun-title">
+                    {item.label}
+                  </p>
                   <p className="text-xs t-muted mt-0.5">{item.sub}</p>
                 </div>
                 <span className="t-muted" style={{ fontSize: 18 }}>
@@ -307,47 +277,64 @@ export default function MyPage() {
             ))}
 
             {/* 로그아웃 / 탈퇴 */}
-            <div className="t-card t-card-shadow rounded-2xl overflow-hidden">
+            <div
+              className="chosun-bordered overflow-hidden"
+              style={{ borderRadius: 14 }}
+            >
               <button
                 onClick={handleLogout}
-                className="w-full flex items-center gap-4 transition-all active:scale-[0.99]"
-                style={{ padding: "16px 20px" }}
+                className="w-full flex items-center gap-4 text-left transition-colors hover:bg-[var(--bg-card-hover)]"
+                style={{ padding: "16px 20px", cursor: "pointer" }}
               >
                 <div
-                  className="w-10 h-10 rounded-xl flex items-center justify-center text-xl flex-shrink-0"
-                  style={{ background: "var(--bg-card-hover)" }}
+                  className="flex items-center justify-center text-xl flex-shrink-0"
+                  style={{
+                    width: 40,
+                    height: 40,
+                    borderRadius: 10,
+                    background: "var(--bg-card-hover)",
+                    border: "1.5px solid var(--border)",
+                  }}
                 >
                   🚪
                 </div>
-                <div className="flex-1 text-left">
-                  <p className="text-sm font-semibold t-text">로그아웃</p>
+                <div className="flex-1">
+                  <p className="text-sm font-semibold t-text chosun-title">
+                    로그아웃
+                  </p>
                 </div>
                 <span className="t-muted" style={{ fontSize: 18 }}>
                   ›
                 </span>
               </button>
-              <div
+              {/* <div
                 style={{
                   height: 1,
                   background: "var(--border)",
                   margin: "0 20px",
                 }}
-              />
-              <button
+              /> */}
+              {/* <button
                 onClick={() => setSection("delete-confirm")}
-                className="w-full flex items-center gap-4 transition-all active:scale-[0.99]"
-                style={{ padding: "16px 20px" }}
+                className="w-full flex items-center gap-4 text-left transition-colors hover:bg-[var(--bg-card-hover)]"
+                style={{ padding: "16px 20px", cursor: "pointer" }}
               >
                 <div
-                  className="w-10 h-10 rounded-xl flex items-center justify-center text-xl flex-shrink-0"
-                  style={{ background: "rgba(239,68,68,0.08)" }}
+                  className="flex items-center justify-center text-xl flex-shrink-0"
+                  style={{
+                    width: 40,
+                    height: 40,
+                    borderRadius: 10,
+                    background: "rgba(160, 33, 26, 0.1)",
+                    border: "1.5px solid var(--chosun-vermillion)",
+                  }}
                 >
                   🗑️
                 </div>
-                <div className="flex-1 text-left">
+                <div className="flex-1">
                   <p
-                    className="text-sm font-semibold"
-                    style={{ color: "#ef4444" }}
+                    className="text-sm font-semibold chosun-title"
+                    style={{ color: "var(--chosun-vermillion)" }}
                   >
                     회원 탈퇴
                   </p>
@@ -358,19 +345,25 @@ export default function MyPage() {
                 <span className="t-muted" style={{ fontSize: 18 }}>
                   ›
                 </span>
-              </button>
+              </button> */}
             </div>
           </div>
         )}
 
         {/* ── 프로필 수정 섹션 ── */}
         {section === "edit" && (
-          <form onSubmit={handleSaveEdit} className="space-y-4 anim-fade-up">
-            <div className="t-card t-card-shadow rounded-3xl p-6 space-y-5">
-              <div className="space-y-1.5">
+          <form
+            onSubmit={handleSaveEdit}
+            className="px-6 pb-10 space-y-4 anim-fade-up"
+          >
+            <div
+              className="chosun-bordered"
+              style={{ padding: 22, borderRadius: 18 }}
+            >
+              <div className="space-y-2 mb-5">
                 <Label
                   htmlFor="edit-insta"
-                  className="t-text text-sm font-medium"
+                  className="t-text text-sm font-medium chosun-title"
                 >
                   인스타그램 ID
                 </Label>
@@ -385,15 +378,15 @@ export default function MyPage() {
                     onChange={(e) =>
                       setEditInsta(e.target.value.replace(/^@/, ""))
                     }
-                    className="pl-7 rounded-xl bg-transparent t-text"
-                    style={{ borderColor: "var(--border)" }}
+                    className="pl-7 rounded-xl bg-transparent t-text h-12"
+                    style={{ border: "1.5px solid var(--border-accent)" }}
                   />
                 </div>
                 <p className="text-xs t-muted">
                   반드시{" "}
                   <span
                     className="font-medium"
-                    style={{ color: "var(--accent-from)" }}
+                    style={{ color: "var(--chosun-vermillion)" }}
                   >
                     공개 계정
                   </span>
@@ -401,10 +394,10 @@ export default function MyPage() {
                 </p>
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label
                   htmlFor="edit-dept"
-                  className="t-text text-sm font-medium"
+                  className="t-text text-sm font-medium chosun-title"
                 >
                   학과{" "}
                   <span className="t-muted font-normal text-xs">(선택)</span>
@@ -412,31 +405,33 @@ export default function MyPage() {
                 <Input
                   id="edit-dept"
                   type="text"
-                  placeholder="ex. 경영학과"
+                  placeholder="ex. 컴퓨터과학과"
                   value={editDept}
                   onChange={(e) => setEditDept(e.target.value)}
-                  className="rounded-xl bg-transparent t-text"
-                  style={{ borderColor: "var(--border)" }}
+                  className="rounded-xl bg-transparent t-text h-12"
+                  style={{ border: "1.5px solid var(--border-accent)" }}
                 />
               </div>
 
               {error && (
-                <p className="text-xs text-red-400 text-center">{error}</p>
+                <p
+                  className="text-xs text-center mt-4"
+                  style={{ color: "var(--chosun-vermillion)" }}
+                >
+                  {error}
+                </p>
               )}
             </div>
 
             <button
               type="submit"
               disabled={saving}
-              className="w-full font-semibold transition-all active:scale-95"
+              className="chosun-btn chosun-title w-full"
               style={{
                 padding: "14px 0",
-                borderRadius: 16,
-                background:
-                  "linear-gradient(135deg, var(--accent-from), var(--accent-to))",
-                color: "var(--accent-text)",
-                boxShadow: "var(--shadow-btn)",
-                opacity: saving ? 0.6 : 1,
+                borderRadius: 12,
+                fontSize: 15,
+                letterSpacing: "0.04em",
               }}
             >
               {saving ? "저장 중..." : "저장하기"}
@@ -446,38 +441,61 @@ export default function MyPage() {
 
         {/* ── 탈퇴 확인 섹션 ── */}
         {section === "delete-confirm" && (
-          <div className="anim-fade-up space-y-4">
-            <div className="t-card t-card-shadow rounded-3xl p-6 text-center space-y-3">
-              <div className="text-5xl mb-2">⚠️</div>
+          <div className="px-6 pb-10 space-y-4 anim-fade-up">
+            <div
+              className="chosun-bordered text-center"
+              style={{ padding: 26, borderRadius: 18 }}
+            >
+              <div className="text-5xl mb-3">⚠️</div>
               <p
-                className="font-bold t-text"
-                style={{ fontFamily: "'Gaegu', cursive", fontSize: "1.2rem" }}
+                className="font-bold t-text chosun-title mb-3"
+                style={{ fontSize: "1.2rem", letterSpacing: "-0.01em" }}
               >
                 정말 탈퇴하시겠어요?
               </p>
               <p className="text-sm t-sub leading-relaxed">
                 탈퇴하면 내 계정이 피드에서 즉시 제거돼요.
                 <br />
-                잔여 리롤은 환불되지 않아요.
+                잔여 뽑기권은 환불되지 않아요.
+                <br />
+                특수한 경우에는 고객센터로 문의해주세요.
+              </p>
+              <p className="text-xs t-muted mt-3">
+                고객센터: 부스 방문 / 카카오톡 오픈채팅
               </p>
             </div>
             <button
               onClick={handleDelete}
-              className="w-full font-semibold transition-all active:scale-95"
+              className="chosun-title w-full"
               style={{
                 padding: "14px 0",
-                borderRadius: 16,
-                background: "#ef4444",
-                color: "white",
+                borderRadius: 12,
                 fontSize: 15,
+                background: "var(--chosun-vermillion)",
+                color: "var(--accent-text)",
+                border: "2px solid #6e1612",
+                cursor: "pointer",
+                transition: "transform 0.18s, filter 0.2s",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = "scale(1.05)";
+                e.currentTarget.style.filter = "brightness(1.08)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = "scale(1)";
+                e.currentTarget.style.filter = "brightness(1)";
               }}
             >
               탈퇴하기
             </button>
             <button
               onClick={() => setSection("main")}
-              className="w-full font-medium t-sub transition-all"
-              style={{ padding: "12px 0" }}
+              className="chosun-btn-outline chosun-title w-full"
+              style={{
+                padding: "12px 0",
+                borderRadius: 12,
+                fontSize: 14,
+              }}
             >
               취소
             </button>

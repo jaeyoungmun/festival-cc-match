@@ -3,7 +3,8 @@ import { createClient } from "@/lib/supabase/server";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
-  const origin = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+  // 요청 자체의 origin을 사용 — Vercel 어떤 환경이든 자동 동작.
+  const origin = request.nextUrl.origin;
 
   const error = searchParams.get("error");
   const errorCode = searchParams.get("error_code");
