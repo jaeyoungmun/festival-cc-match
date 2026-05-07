@@ -94,18 +94,8 @@ function LoginForm() {
     router.push(`/auth/verify?email=${encodeURIComponent(email)}`);
   }
 
-  const btnStyle = (active: boolean) => ({
-    height: 48,
-    borderRadius: 14,
-    fontSize: 15,
-    background: "linear-gradient(135deg, var(--accent-from), var(--accent-to))",
-    color: "var(--accent-text)",
-    opacity: active ? 1 : 0.45,
-    boxShadow: active ? "var(--shadow-btn)" : "none",
-  });
-
   return (
-    <main className="min-h-screen t-page flex flex-col items-center justify-center px-6 relative overflow-hidden">
+    <main className="min-h-screen t-page relative overflow-hidden chosun-body">
       <div
         className="fixed inset-0 pointer-events-none"
         style={{
@@ -114,246 +104,328 @@ function LoginForm() {
         }}
       />
 
-      <div className="relative w-full" style={{ maxWidth: 360 }}>
-        <div className="text-center mb-8 anim-fade-up">
-          <button
-            onClick={() => router.push("/")}
-            className="text-4xl mb-3 block mx-auto"
-          >
-            🎪
-          </button>
-          <h1
-            className="font-bold t-accent-text"
-            style={{ fontFamily: "'Gaegu', cursive", fontSize: "1.9rem" }}
-          >
-            축제 인연 찾기
-          </h1>
-          <p className="text-sm t-sub mt-1">
-            {step === "email" && "상명대 학번으로 시작해요"}
-            {step === "login" && "비밀번호를 입력해주세요"}
-            {step === "consent" && "처음 오셨군요! 동의 후 가입해요"}
-          </p>
-        </div>
-
-        {/* 1단계 — 이메일 */}
-        {step === "email" && (
-          <form
-            onSubmit={handleEmailNext}
-            className="t-card t-card-shadow rounded-3xl p-7 space-y-5 anim-fade-up anim-delay-1"
-          >
-            <div className="space-y-1.5">
-              <Label htmlFor="studentId" className="t-text text-sm font-medium">
-                학번
-              </Label>
-              <Input
-                id="studentId"
-                type="text"
-                inputMode="numeric"
-                pattern="\d*"
-                placeholder="예: 202012345"
-                value={studentId}
-                onChange={(e) => {
-                  setStudentId(e.target.value.replace(/\D/g, ""));
-                  setError("");
-                }}
-                className="rounded-xl bg-transparent t-text h-12"
-                style={{ borderColor: "var(--border)" }}
-                autoFocus
-                required
-              />
-              <p className="text-xs t-muted">
-                입력한 학번@sangmyung.kr 로 인증 메일이 발송돼요
-              </p>
-            </div>
-            {error && (
-              <p className="text-xs text-red-400 text-center">{error}</p>
-            )}
+      <div
+        className="relative w-full mx-auto flex flex-col items-center justify-center min-h-screen px-6 py-10"
+        style={{ maxWidth: 480 }}
+      >
+        <div className="w-full" style={{ maxWidth: 360 }}>
+          {/* 헤더 */}
+          <div className="text-center mb-8 anim-fade-up">
             <button
-              type="submit"
-              disabled={loading || !studentId}
-              className="w-full font-semibold transition-all active:scale-95"
-              style={btnStyle(!!studentId && !loading)}
+              onClick={() => router.push("/")}
+              className="chosun-seal mx-auto mb-4 chosun-han"
+              style={{
+                width: 56,
+                height: 56,
+                fontSize: 28,
+                cursor: "pointer",
+              }}
             >
-              {loading ? "확인 중..." : "계속하기 →"}
+              緣
             </button>
-          </form>
-        )}
-
-        {/* 2a단계 — 기존 유저 비밀번호 로그인 */}
-        {step === "login" && (
-          <form
-            onSubmit={handleLogin}
-            className="t-card t-card-shadow rounded-3xl p-7 space-y-5 anim-fade-up"
-          >
-            <div
-              className="flex items-center justify-between p-3 rounded-xl t-badge"
-              style={{ border: "1px solid var(--border)" }}
+            <h1
+              className="font-bold t-text chosun-title"
+              style={{ fontSize: "1.8rem", letterSpacing: "-0.01em" }}
             >
-              <p className="text-sm t-text truncate">{email}</p>
+              컴과시그널
+            </h1>
+            <p className="text-sm t-sub mt-2">
+              {step === "email" && "상명대 학번으로 시작해요"}
+              {step === "login" && "비밀번호를 입력해주세요"}
+              {step === "consent" && "처음 오셨군요! 동의 후 가입해요"}
+            </p>
+          </div>
+
+          {/* 1단계 — 학번 */}
+          {step === "email" && (
+            <form
+              onSubmit={handleEmailNext}
+              className="chosun-bordered anim-fade-up anim-delay-1"
+              style={{ padding: 24, borderRadius: 18 }}
+            >
+              <div className="space-y-2 mb-5">
+                <Label
+                  htmlFor="studentId"
+                  className="t-text text-sm font-medium chosun-title"
+                >
+                  학번
+                </Label>
+                <Input
+                  id="studentId"
+                  type="text"
+                  inputMode="numeric"
+                  pattern="\d*"
+                  placeholder="예: 202012345"
+                  value={studentId}
+                  onChange={(e) => {
+                    setStudentId(e.target.value.replace(/\D/g, ""));
+                    setError("");
+                  }}
+                  className="rounded-xl bg-transparent t-text h-12"
+                  style={{
+                    border: "1.5px solid var(--border-accent)",
+                  }}
+                  autoFocus
+                  required
+                />
+                <p className="text-xs t-muted">
+                  입력한 학번@sangmyung.kr 로 인증 메일이 발송돼요
+                </p>
+              </div>
+              {error && (
+                <p
+                  className="text-xs text-center mb-4"
+                  style={{ color: "var(--chosun-vermillion)" }}
+                >
+                  {error}
+                </p>
+              )}
+              <button
+                type="submit"
+                disabled={loading || !studentId}
+                className="chosun-btn chosun-title w-full"
+                style={{
+                  padding: "14px 0",
+                  borderRadius: 12,
+                  fontSize: 15,
+                  letterSpacing: "0.04em",
+                }}
+              >
+                {loading ? "확인 중..." : "계속하기 →"}
+              </button>
+            </form>
+          )}
+
+          {/* 2a단계 — 기존 유저 비밀번호 로그인 */}
+          {step === "login" && (
+            <form
+              onSubmit={handleLogin}
+              className="chosun-bordered anim-fade-up"
+              style={{ padding: 24, borderRadius: 18 }}
+            >
+              <div
+                className="flex items-center justify-between p-3 mb-4"
+                style={{
+                  border: "1.5px solid var(--border)",
+                  borderRadius: 10,
+                  background: "var(--bg-badge)",
+                }}
+              >
+                <p className="text-sm t-text truncate">{email}</p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setStep("email");
+                    setPassword("");
+                    setError("");
+                  }}
+                  className="text-xs t-muted ml-2 flex-shrink-0 underline underline-offset-2"
+                  style={{ cursor: "pointer" }}
+                >
+                  변경
+                </button>
+              </div>
+              <div className="space-y-2 mb-5">
+                <Label
+                  htmlFor="password"
+                  className="t-text text-sm font-medium chosun-title"
+                >
+                  비밀번호
+                </Label>
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPw ? "text" : "password"}
+                    placeholder="비밀번호 입력"
+                    value={password}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      setError("");
+                    }}
+                    className="rounded-xl bg-transparent t-text h-12 pr-12"
+                    style={{
+                      border: "1.5px solid var(--border-accent)",
+                    }}
+                    autoFocus
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPw((v) => !v)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-lg t-muted"
+                    style={{ cursor: "pointer" }}
+                  >
+                    {showPw ? "🙈" : "👁️"}
+                  </button>
+                </div>
+              </div>
+              {error && (
+                <p
+                  className="text-xs text-center mb-4"
+                  style={{ color: "var(--chosun-vermillion)" }}
+                >
+                  {error}
+                </p>
+              )}
+              <button
+                type="submit"
+                disabled={loading || !password}
+                className="chosun-btn chosun-title w-full"
+                style={{
+                  padding: "14px 0",
+                  borderRadius: 12,
+                  fontSize: 15,
+                  letterSpacing: "0.04em",
+                }}
+              >
+                {loading ? "로그인 중..." : "로그인"}
+              </button>
+            </form>
+          )}
+
+          {/* 2b단계 — 신규 유저 동의 */}
+          {step === "consent" && (
+            <form
+              onSubmit={handleConsentNext}
+              className="chosun-bordered anim-fade-up"
+              style={{ padding: 24, borderRadius: 18 }}
+            >
+              <div
+                className="flex items-center gap-3 p-3 mb-4"
+                style={{
+                  borderRadius: 10,
+                  background: "var(--accent-soft)",
+                  border: "1.5px solid var(--border-accent)",
+                }}
+              >
+                <span className="text-xl">🏮</span>
+                <div>
+                  <p
+                    className="text-sm font-semibold t-text chosun-title"
+                    style={{ letterSpacing: "0.02em" }}
+                  >
+                    처음 오셨군요!
+                  </p>
+                  <p className="text-xs t-sub mt-0.5">
+                    이메일 인증 후 비밀번호를 설정해요
+                  </p>
+                </div>
+              </div>
+
+              <div
+                className="p-3 mb-4"
+                style={{
+                  borderRadius: 10,
+                  border: "1.5px solid var(--border)",
+                  background: "var(--bg-badge)",
+                }}
+              >
+                <p className="text-xs t-muted mb-1">가입 이메일</p>
+                <p className="text-sm font-medium t-text">{email}</p>
+              </div>
+
+              <label
+                className="flex gap-3 p-4 mb-4 transition-colors"
+                style={{
+                  cursor: "pointer",
+                  borderRadius: 12,
+                  background: agreed
+                    ? "var(--accent-soft)"
+                    : "var(--bg-card-hover)",
+                  border: `2px solid ${agreed ? "var(--chosun-vermillion)" : "var(--border)"}`,
+                }}
+              >
+                <div className="flex-shrink-0 mt-0.5">
+                  <input
+                    type="checkbox"
+                    className="sr-only"
+                    checked={agreed}
+                    onChange={(e) => {
+                      setAgreed(e.target.checked);
+                      setError("");
+                    }}
+                  />
+                  <div
+                    className="w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all"
+                    style={{
+                      borderColor: agreed
+                        ? "var(--chosun-vermillion)"
+                        : "var(--border)",
+                      background: agreed
+                        ? "var(--chosun-vermillion)"
+                        : "transparent",
+                    }}
+                  >
+                    {agreed && (
+                      <span
+                        className="text-white font-bold"
+                        style={{ fontSize: 11 }}
+                      >
+                        ✓
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <p className="text-xs t-sub leading-relaxed">
+                  <span
+                    className="font-semibold"
+                    style={{ color: "var(--chosun-vermillion)" }}
+                  >
+                    내 인스타그램 ID가 이성 회원에게 공개
+                  </span>
+                  됩니다. 가입은 이에 동의하는 것으로 간주됩니다.{" "}
+                  <span className="font-medium t-text">반드시 공개 계정</span>
+                  으로 설정해주세요.
+                </p>
+              </label>
+
+              {error && (
+                <p
+                  className="text-xs text-center mb-4"
+                  style={{ color: "var(--chosun-vermillion)" }}
+                >
+                  {error}
+                </p>
+              )}
+
+              <button
+                type="submit"
+                disabled={loading || !agreed}
+                className="chosun-btn chosun-title w-full mb-2"
+                style={{
+                  padding: "14px 0",
+                  borderRadius: 12,
+                  fontSize: 15,
+                  letterSpacing: "0.04em",
+                }}
+              >
+                {loading ? "전송 중..." : "인증 메일 받기 ✉️"}
+              </button>
               <button
                 type="button"
                 onClick={() => {
                   setStep("email");
-                  setPassword("");
                   setError("");
                 }}
-                className="text-xs t-muted ml-2 flex-shrink-0 underline underline-offset-2"
+                className="w-full text-sm t-muted py-2"
+                style={{ cursor: "pointer" }}
               >
-                변경
+                ← 학번 다시 입력
               </button>
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="password" className="t-text text-sm font-medium">
-                비밀번호
-              </Label>
-              <div className="relative">
-                <Input
-                  id="password"
-                  type={showPw ? "text" : "password"}
-                  placeholder="비밀번호 입력"
-                  value={password}
-                  onChange={(e) => {
-                    setPassword(e.target.value);
-                    setError("");
-                  }}
-                  className="rounded-xl bg-transparent t-text h-12 pr-12"
-                  style={{ borderColor: "var(--border)" }}
-                  autoFocus
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPw((v) => !v)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-lg t-muted"
-                >
-                  {showPw ? "🙈" : "👁️"}
-                </button>
-              </div>
-            </div>
-            {error && (
-              <p className="text-xs text-red-400 text-center">{error}</p>
-            )}
-            <button
-              type="submit"
-              disabled={loading || !password}
-              className="w-full font-semibold transition-all active:scale-95"
-              style={btnStyle(!!password && !loading)}
-            >
-              {loading ? "로그인 중..." : "로그인"}
-            </button>
-          </form>
-        )}
+            </form>
+          )}
 
-        {/* 2b단계 — 신규 유저 동의 */}
-        {step === "consent" && (
-          <form
-            onSubmit={handleConsentNext}
-            className="t-card t-card-shadow rounded-3xl p-7 space-y-5 anim-fade-up"
-          >
-            <div
-              className="flex items-center gap-3 p-3 rounded-2xl"
-              style={{
-                background: "var(--accent-soft)",
-                border: "1px solid var(--border-accent)",
-              }}
+          <p className="text-center text-xs t-muted mt-6">
+            로그인하면{" "}
+            <span
+              className="font-medium"
+              style={{ color: "var(--chosun-vermillion)" }}
             >
-              <span className="text-xl">👋</span>
-              <div>
-                <p className="text-xs font-semibold t-text">처음 오셨군요!</p>
-                <p className="text-xs t-sub mt-0.5">
-                  이메일 인증 후 비밀번호를 설정해요
-                </p>
-              </div>
-            </div>
-            <div
-              className="p-3 rounded-xl t-badge"
-              style={{ border: "1px solid var(--border)" }}
-            >
-              <p className="text-xs t-muted mb-0.5">가입 이메일</p>
-              <p className="text-sm font-medium t-text">{email}</p>
-            </div>
-            <label
-              className="flex gap-3 p-4 rounded-2xl cursor-pointer transition-colors"
-              style={{
-                background: agreed
-                  ? "var(--accent-soft)"
-                  : "var(--bg-card-hover)",
-                border: `1px solid ${agreed ? "var(--border-accent)" : "var(--border)"}`,
-              }}
-            >
-              <div className="flex-shrink-0 mt-0.5">
-                <input
-                  type="checkbox"
-                  className="sr-only"
-                  checked={agreed}
-                  onChange={(e) => {
-                    setAgreed(e.target.checked);
-                    setError("");
-                  }}
-                />
-                <div
-                  className="w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all"
-                  style={{
-                    borderColor: agreed
-                      ? "var(--accent-from)"
-                      : "var(--border)",
-                    background: agreed
-                      ? "linear-gradient(135deg, var(--accent-from), var(--accent-to))"
-                      : "transparent",
-                  }}
-                >
-                  {agreed && (
-                    <span
-                      className="text-white font-bold"
-                      style={{ fontSize: 11 }}
-                    >
-                      ✓
-                    </span>
-                  )}
-                </div>
-              </div>
-              <p className="text-xs t-sub leading-relaxed">
-                <span
-                  className="font-semibold"
-                  style={{ color: "var(--accent-from)" }}
-                >
-                  내 인스타그램 ID가 이성 회원에게 공개
-                </span>
-                됩니다. 가입은 이에 동의하는 것으로 간주됩니다.{" "}
-                <span className="font-medium t-text">반드시 공개 계정</span>으로
-                설정해주세요.
-              </p>
-            </label>
-            {error && (
-              <p className="text-xs text-red-400 text-center">{error}</p>
-            )}
-            <button
-              type="submit"
-              disabled={loading || !agreed}
-              className="w-full font-semibold transition-all active:scale-95"
-              style={btnStyle(agreed && !loading)}
-            >
-              {loading ? "전송 중..." : "인증 메일 받기 ✉️"}
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setStep("email");
-                setError("");
-              }}
-              className="w-full text-sm t-muted"
-              style={{ paddingTop: 4 }}
-            >
-              ← 이메일 다시 입력
-            </button>
-          </form>
-        )}
-
-        <p className="text-center text-xs t-muted mt-6">
-          로그인하면{" "}
-          <span style={{ color: "var(--accent-from)" }}>축제 인연 찾기</span>{" "}
-          이용약관에 동의한 것으로 간주돼요
-        </p>
+              컴과시그널
+            </span>{" "}
+            이용약관에 동의한 것으로 간주돼요
+          </p>
+        </div>
       </div>
     </main>
   );
