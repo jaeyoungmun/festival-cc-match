@@ -5,12 +5,18 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  charactersByGender,
+  type CharacterName,
+  type Gender,
+} from "@/lib/characters";
 
 type Profile = {
   instagram_id: string;
   department: string | null;
   gender: string;
   email: string;
+  character: CharacterName | null;
 };
 
 type Section = "main" | "edit" | "delete-confirm";
@@ -26,6 +32,7 @@ export default function MyPage() {
 
   const [editInsta, setEditInsta] = useState("");
   const [editDept, setEditDept] = useState("");
+  const [editCharacter, setEditCharacter] = useState<CharacterName | "">("");
 
   useEffect(() => {
     async function load() {
@@ -48,6 +55,7 @@ export default function MyPage() {
         setProfile(p);
         setEditInsta(p.instagram_id);
         setEditDept(p.department ?? "");
+        setEditCharacter(p.character ?? "");
       }
       if (balanceRes.ok) {
         const b = await balanceRes.json();
@@ -64,6 +72,10 @@ export default function MyPage() {
       setError("인스타 ID를 입력해주세요");
       return;
     }
+    if (!editCharacter) {
+      setError("캐릭터를 선택해주세요");
+      return;
+    }
     setSaving(true);
     setError("");
     const res = await fetch("/api/user/profile", {
@@ -72,6 +84,7 @@ export default function MyPage() {
       body: JSON.stringify({
         instagram_id: editInsta,
         department: editDept || null,
+        character: editCharacter,
       }),
     });
     setSaving(false);
@@ -80,7 +93,14 @@ export default function MyPage() {
       return;
     }
     setProfile((p) =>
-      p ? { ...p, instagram_id: editInsta, department: editDept || null } : p,
+      p
+        ? {
+            ...p,
+            instagram_id: editInsta,
+            department: editDept || null,
+            character: editCharacter,
+          }
+        : p,
     );
     setSection("main");
   }
@@ -412,6 +432,54 @@ export default function MyPage() {
                   style={{ border: "1.5px solid var(--border-accent)" }}
                 />
               </div>
+
+              {/* 캐릭터 */}
+              {profile &&
+                (profile.gender === "male" || profile.gender === "female") && (
+                  <div className="space-y-2 mt-5">
+                    <Label className="t-text text-sm font-medium chosun-title">
+                      캐릭터
+                    </Label>
+                    <div className="grid grid-cols-2 gap-3">
+                      {charactersByGender(profile.gender as Gender).map((c) => (
+                        <button
+                          key={c.name}
+                          type="button"
+                          onClick={() => setEditCharacter(c.name)}
+                          className="chosun-card-hover flex flex-col items-center gap-2"
+                          style={{
+                            padding: "12px 8px",
+                            borderRadius: 12,
+                            border: `2px solid ${
+                              editCharacter === c.name
+                                ? "var(--chosun-vermillion)"
+                                : "var(--border)"
+                            }`,
+                            background:
+                              editCharacter === c.name
+                                ? "var(--accent-soft)"
+                                : "var(--bg-card)",
+                            cursor: "pointer",
+                          }}
+                        >
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={c.svg}
+                            alt={c.name}
+                            style={{
+                              width: 64,
+                              height: 64,
+                              objectFit: "contain",
+                            }}
+                          />
+                          <span className="text-sm font-medium t-text chosun-title">
+                            {c.name}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
               {error && (
                 <p

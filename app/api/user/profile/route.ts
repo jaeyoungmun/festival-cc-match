@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { isValidCharacterForGender, isCharacterName } from "@/lib/characters";
 
 // POST /api/user/profile  → 가입 시 프로필 최초 생성
-// PATCH /api/user/profile → 마이페이지 수정
+// PATCH /api/user/profile → 마이페이지 수정 (또는 기존 유저가 character만 채울 때)
 export async function POST(request: NextRequest) {
   return upsertProfile(request, "insert");
 }
@@ -23,19 +24,26 @@ async function upsertProfile(request: NextRequest, mode: "insert" | "update") {
   }
 
   const body = await request.json().catch(() => null);
-  const { instagram_id, gender, department, is_visible } = body ?? {};
+  const { instagram_id, gender, department, is_visible, character } =
+    body ?? {};
 
   // 최초 생성 시 필수값 검증
   if (mode === "insert") {
-    if (!instagram_id || !gender) {
+    if (!instagram_id || !gender || !character) {
       return NextResponse.json(
-        { error: "instagram_id, gender는 필수입니다" },
+        { error: "instagram_id, gender, character는 필수입니다" },
         { status: 400 },
       );
     }
     if (!["male", "female"].includes(gender)) {
       return NextResponse.json(
         { error: "유효하지 않은 gender 값" },
+        { status: 400 },
+      );
+    }
+    if (!isValidCharacterForGender(character, gender)) {
+      return NextResponse.json(
+        { error: "성별에 맞는 캐릭터를 선택해주세요" },
         { status: 400 },
       );
     }
@@ -51,10 +59,10 @@ async function upsertProfile(request: NextRequest, mode: "insert" | "update") {
       instagram_id: cleanId,
       gender,
       department: department ?? null,
+      character,
       consent_agreed: true,
     });
     if (error) {
-      // 이미 존재하면 upsert로 처리
       if (error.code === "23505") {
         return NextResponse.json(
           { error: "이미 프로필이 존재합니다" },
@@ -70,6 +78,34 @@ async function upsertProfile(request: NextRequest, mode: "insert" | "update") {
     if (cleanId !== undefined) updates.instagram_id = cleanId;
     if (is_visible !== undefined) updates.is_visible = is_visible;
     if (department !== undefined) updates.department = department;
+
+    if (character !== undefined) {
+      if (!isCharacterName(character)) {
+        return NextResponse.json(
+          { error: "유효하지 않은 캐릭터" },
+          { status: 400 },
+        );
+      }
+      // 본인 gender와 캐릭터 성별 일치 확인 필요
+      const { data: existing } = await supabase
+        .from("profiles")
+        .select("gender")
+        .eq("id", user.id)
+        .maybeSingle();
+      if (!existing) {
+        return NextResponse.json(
+          { error: "프로필이 없습니다" },
+          { status: 404 },
+        );
+      }
+      if (!isValidCharacterForGender(character, existing.gender)) {
+        return NextResponse.json(
+          { error: "성별에 맞는 캐릭터를 선택해주세요" },
+          { status: 400 },
+        );
+      }
+      updates.character = character;
+    }
 
     if (Object.keys(updates).length === 0) {
       return NextResponse.json(

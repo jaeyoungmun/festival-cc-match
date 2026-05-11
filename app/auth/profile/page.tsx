@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { charactersByGender, type CharacterName } from "@/lib/characters";
 
 function ProfileForm() {
   const router = useRouter();
@@ -14,10 +15,17 @@ function ProfileForm() {
   const [passwordConfirm, setPasswordConfirm] = useState("");
   const [instagramId, setInstagramId] = useState("");
   const [gender, setGender] = useState<"male" | "female" | "">("");
+  const [character, setCharacter] = useState<CharacterName | "">("");
   const [department, setDepartment] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [showPw, setShowPw] = useState(false);
+
+  // 성별 변경 시 캐릭터 초기화 (이성 캐릭터 선택 방지)
+  function handleGenderChange(g: "male" | "female") {
+    setGender(g);
+    setCharacter("");
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -37,6 +45,10 @@ function ProfileForm() {
       setError("성별을 선택해주세요");
       return;
     }
+    if (!character) {
+      setError("캐릭터를 선택해주세요");
+      return;
+    }
 
     setLoading(true);
     setError("");
@@ -54,6 +66,7 @@ function ProfileForm() {
       body: JSON.stringify({
         instagram_id: instagramId,
         gender,
+        character,
         department: department || null,
       }),
     });
@@ -73,7 +86,8 @@ function ProfileForm() {
     password.length >= 8 &&
     password === passwordConfirm &&
     !!instagramId &&
-    !!gender;
+    !!gender &&
+    !!character;
 
   return (
     <main className="min-h-screen t-page relative overflow-hidden chosun-body">
@@ -217,7 +231,9 @@ function ProfileForm() {
                   <button
                     key={opt.value}
                     type="button"
-                    onClick={() => setGender(opt.value as "male" | "female")}
+                    onClick={() =>
+                      handleGenderChange(opt.value as "male" | "female")
+                    }
                     className="chosun-card-hover py-4 flex flex-col items-center gap-1"
                     style={{
                       borderRadius: 12,
@@ -238,21 +254,45 @@ function ProfileForm() {
               </div>
             </div>
 
-            {/* 학과 */}
-            <div className="space-y-2 mb-5">
-              <Label className="t-text text-sm font-medium chosun-title">
-                학과{" "}
-                <span className="t-muted font-normal text-xs">(선택)</span>
-              </Label>
-              <Input
-                type="text"
-                placeholder="ex. 컴퓨터과학과"
-                value={department}
-                onChange={(e) => setDepartment(e.target.value)}
-                className="rounded-xl bg-transparent t-text h-12"
-                style={{ border: "1.5px solid var(--border-accent)" }}
-              />
-            </div>
+            {/* 캐릭터 — 성별 선택 후 노출 */}
+            {gender && (
+              <div className="space-y-2 mb-5">
+                <Label className="t-text text-sm font-medium chosun-title">
+                  캐릭터{" "}
+                  <span style={{ color: "var(--chosun-vermillion)" }}>*</span>
+                </Label>
+                <div className="grid grid-cols-2 gap-3">
+                  {charactersByGender(gender).map((c) => (
+                    <button
+                      key={c.name}
+                      type="button"
+                      onClick={() => setCharacter(c.name)}
+                      className="chosun-card-hover flex flex-col items-center gap-2"
+                      style={{
+                        padding: "14px 8px",
+                        borderRadius: 12,
+                        border: `2px solid ${character === c.name ? "var(--chosun-vermillion)" : "var(--border)"}`,
+                        background:
+                          character === c.name
+                            ? "var(--accent-soft)"
+                            : "var(--bg-card)",
+                        cursor: "pointer",
+                      }}
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={c.svg}
+                        alt={c.name}
+                        style={{ width: 72, height: 72, objectFit: "contain" }}
+                      />
+                      <span className="text-sm font-medium t-text chosun-title">
+                        {c.name}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {error && (
               <p

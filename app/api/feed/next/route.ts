@@ -39,7 +39,7 @@ export async function GET() {
   if (lastSeen?.target_id) {
     const { data: currentProfile } = await supabase
       .from("profiles")
-      .select("id, instagram_id, department")
+      .select("id, instagram_id, department, character")
       .eq("id", lastSeen.target_id)
       .maybeSingle();
 
@@ -78,15 +78,22 @@ export async function GET() {
     return NextResponse.json({ error: "서버 오류" }, { status: 500 });
   }
 
-  const profile = data[0];
+  const candidate = data[0];
 
   // 4. seen으로 마킹 (가장 최근 seen = 현재 카드)
   await supabase
     .from("seen_users")
     .upsert(
-      { viewer_id: user.id, target_id: profile.id },
+      { viewer_id: user.id, target_id: candidate.id },
       { onConflict: "viewer_id,target_id" },
     );
 
-  return NextResponse.json({ profile });
+  // 5. RPC가 character를 반환하지 않을 수 있어 풀 프로필 다시 조회
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("id, instagram_id, department, character")
+    .eq("id", candidate.id)
+    .maybeSingle();
+
+  return NextResponse.json({ profile: profile ?? candidate });
 }

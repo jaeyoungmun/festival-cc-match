@@ -69,15 +69,22 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "서버 오류" }, { status: 500 });
   }
 
-  const newProfile = nextData[0];
+  const candidate = nextData[0];
 
   // 4. 새 카드를 seen으로 마킹 (가장 최근 seen = 현재 카드)
   await supabase
     .from("seen_users")
     .upsert(
-      { viewer_id: user.id, target_id: newProfile.id },
+      { viewer_id: user.id, target_id: candidate.id },
       { onConflict: "viewer_id,target_id" },
     );
 
-  return NextResponse.json({ profile: newProfile, remaining });
+  // 5. RPC가 character를 반환하지 않을 수 있어 풀 프로필 다시 조회
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("id, instagram_id, department, character")
+    .eq("id", candidate.id)
+    .maybeSingle();
+
+  return NextResponse.json({ profile: profile ?? candidate, remaining });
 }

@@ -10,6 +10,13 @@ const PUBLIC_PATHS = [
   "/auth/callback",
 ];
 
+// character 없어도 접근 가능한 (로그인된) 경로 — 이 외엔 /auth/character로 강제
+const CHARACTER_EXEMPT_PATHS = [
+  "/auth/character",
+  "/auth/profile",
+  "/mypage",
+];
+
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const response = NextResponse.next({ request });
@@ -47,9 +54,31 @@ export async function proxy(request: NextRequest) {
   }
 
   // 인증된 유저가 auth 페이지 재접근 → 피드로
-  // /auth/profile은 신규 유저가 올 수 있으므로 허용
-  if (user && pathname.startsWith("/auth/") && pathname !== "/auth/profile") {
+  // /auth/profile, /auth/character는 신규/기존 유저가 올 수 있으므로 허용
+  if (
+    user &&
+    pathname.startsWith("/auth/") &&
+    pathname !== "/auth/profile" &&
+    pathname !== "/auth/character"
+  ) {
     return NextResponse.redirect(new URL("/feed", request.url));
+  }
+
+  // 로그인 유저인데 character 없음 → /auth/character로 강제 (보호 경로에서만)
+  if (user && !isPublic) {
+    const exempt = CHARACTER_EXEMPT_PATHS.some(
+      (p) => pathname === p || pathname.startsWith(p + "/"),
+    );
+    if (!exempt) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("character")
+        .eq("id", user.id)
+        .maybeSingle();
+      if (profile && !profile.character) {
+        return NextResponse.redirect(new URL("/auth/character", request.url));
+      }
+    }
   }
 
   return response;
