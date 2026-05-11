@@ -13,11 +13,7 @@ export async function GET() {
 
   const { data, error } = await supabase
     .from('profiles')
-<<<<<<< HEAD
-    .select('instagram_id, department, gender, email, character')
-=======
-    .select('instagram_id, gender, email, is_visible')
->>>>>>> develop
+    .select('instagram_id, gender, email, character')
     .eq('id', user.id)
     .single()
 

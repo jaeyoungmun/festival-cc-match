@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
   // 5. RPC가 character를 반환하지 않을 수 있어 풀 프로필 다시 조회
   const { data: profile } = await supabase
     .from("profiles")
-    .select("id, instagram_id, department, character")
+    .select("id, instagram_id, character")
     .eq("id", candidate.id)
     .maybeSingle();
 

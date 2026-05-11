@@ -295,7 +295,6 @@ export default function FeedPage() {
                     </p>
                   </div>
 
-<<<<<<< HEAD
                   {/* 캐릭터 멘트 */}
                   <p
                     className="text-center text-xs t-sub px-4 mb-3"
@@ -308,18 +307,6 @@ export default function FeedPage() {
                     &ldquo;{CHARACTERS[character].quote}&rdquo;
                   </p>
 
-                  {/* 학과 */}
-                  {profile.department && (
-                    <p
-                      className="text-center text-sm t-sub mb-5"
-                      style={{ fontFamily: "'Nanum Myeongjo', serif" }}
-                    >
-                      {profile.department}
-                    </p>
-                  )}
-
-=======
->>>>>>> develop
                   {/* 점선 구분 */}
                   <div className="chosun-divider mb-4" />
 

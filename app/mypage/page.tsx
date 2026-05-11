@@ -31,11 +31,7 @@ export default function MyPage() {
   const [error, setError] = useState("");
 
   const [editInsta, setEditInsta] = useState("");
-<<<<<<< HEAD
-  const [editDept, setEditDept] = useState("");
   const [editCharacter, setEditCharacter] = useState<CharacterName | "">("");
-=======
->>>>>>> develop
 
   useEffect(() => {
     async function load() {
@@ -57,11 +53,7 @@ export default function MyPage() {
         const p = await profileRes.json();
         setProfile(p);
         setEditInsta(p.instagram_id);
-<<<<<<< HEAD
-        setEditDept(p.department ?? "");
         setEditCharacter(p.character ?? "");
-=======
->>>>>>> develop
       }
       if (balanceRes.ok) {
         const b = await balanceRes.json();
@@ -89,11 +81,7 @@ export default function MyPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         instagram_id: editInsta,
-<<<<<<< HEAD
-        department: editDept || null,
         character: editCharacter,
-=======
->>>>>>> develop
       }),
     });
     setSaving(false);
@@ -101,20 +89,15 @@ export default function MyPage() {
       setError("저장에 실패했습니다");
       return;
     }
-<<<<<<< HEAD
     setProfile((p) =>
       p
         ? {
             ...p,
             instagram_id: editInsta,
-            department: editDept || null,
             character: editCharacter,
           }
         : p,
     );
-=======
-    setProfile((p) => (p ? { ...p, instagram_id: editInsta } : p));
->>>>>>> develop
     setSection("main");
   }
 
@@ -464,26 +447,6 @@ export default function MyPage() {
                 </p>
               </div>
 
-<<<<<<< HEAD
-              <div className="space-y-2">
-                <Label
-                  htmlFor="edit-dept"
-                  className="t-text text-sm font-medium chosun-title"
-                >
-                  학과{" "}
-                  <span className="t-muted font-normal text-xs">(선택)</span>
-                </Label>
-                <Input
-                  id="edit-dept"
-                  type="text"
-                  placeholder="ex. 컴퓨터과학과"
-                  value={editDept}
-                  onChange={(e) => setEditDept(e.target.value)}
-                  className="rounded-xl bg-transparent t-text h-12"
-                  style={{ border: "1.5px solid var(--border-accent)" }}
-                />
-              </div>
-
               {/* 캐릭터 */}
               {profile &&
                 (profile.gender === "male" || profile.gender === "female") && (
@@ -541,8 +504,6 @@ export default function MyPage() {
                   </div>
                 )}
 
-=======
->>>>>>> develop
               {error && (
                 <p
                   className="text-xs text-center mt-4"
