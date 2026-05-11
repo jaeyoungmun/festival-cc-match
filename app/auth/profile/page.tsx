@@ -14,7 +14,6 @@ function ProfileForm() {
   const [passwordConfirm, setPasswordConfirm] = useState("");
   const [instagramId, setInstagramId] = useState("");
   const [gender, setGender] = useState<"male" | "female" | "">("");
-  const [department, setDepartment] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [showPw, setShowPw] = useState(false);
@@ -54,7 +53,6 @@ function ProfileForm() {
       body: JSON.stringify({
         instagram_id: instagramId,
         gender,
-        department: department || null,
       }),
     });
 
@@ -236,22 +234,6 @@ function ProfileForm() {
                   </button>
                 ))}
               </div>
-            </div>
-
-            {/* 학과 */}
-            <div className="space-y-2 mb-5">
-              <Label className="t-text text-sm font-medium chosun-title">
-                학과{" "}
-                <span className="t-muted font-normal text-xs">(선택)</span>
-              </Label>
-              <Input
-                type="text"
-                placeholder="ex. 컴퓨터과학과"
-                value={department}
-                onChange={(e) => setDepartment(e.target.value)}
-                className="rounded-xl bg-transparent t-text h-12"
-                style={{ border: "1.5px solid var(--border-accent)" }}
-              />
             </div>
 
             {error && (

@@ -23,7 +23,7 @@ async function upsertProfile(request: NextRequest, mode: "insert" | "update") {
   }
 
   const body = await request.json().catch(() => null);
-  const { instagram_id, gender, department, is_visible } = body ?? {};
+  const { instagram_id, gender, is_visible } = body ?? {};
 
   // 최초 생성 시 필수값 검증
   if (mode === "insert") {
@@ -50,7 +50,6 @@ async function upsertProfile(request: NextRequest, mode: "insert" | "update") {
       email: user.email!,
       instagram_id: cleanId,
       gender,
-      department: department ?? null,
       consent_agreed: true,
     });
     if (error) {
@@ -69,7 +68,6 @@ async function upsertProfile(request: NextRequest, mode: "insert" | "update") {
     const updates: Record<string, unknown> = {};
     if (cleanId !== undefined) updates.instagram_id = cleanId;
     if (is_visible !== undefined) updates.is_visible = is_visible;
-    if (department !== undefined) updates.department = department;
 
     if (Object.keys(updates).length === 0) {
       return NextResponse.json(

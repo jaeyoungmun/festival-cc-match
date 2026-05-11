@@ -39,7 +39,7 @@ export async function GET() {
   if (lastSeen?.target_id) {
     const { data: currentProfile } = await supabase
       .from("profiles")
-      .select("id, instagram_id, department")
+      .select("id, instagram_id")
       .eq("id", lastSeen.target_id)
       .maybeSingle();
 

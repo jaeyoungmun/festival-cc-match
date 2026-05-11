@@ -8,7 +8,6 @@ import { Label } from "@/components/ui/label";
 
 type Profile = {
   instagram_id: string;
-  department: string | null;
   gender: string;
   email: string;
 };
@@ -25,7 +24,6 @@ export default function MyPage() {
   const [error, setError] = useState("");
 
   const [editInsta, setEditInsta] = useState("");
-  const [editDept, setEditDept] = useState("");
 
   useEffect(() => {
     async function load() {
@@ -47,7 +45,6 @@ export default function MyPage() {
         const p = await profileRes.json();
         setProfile(p);
         setEditInsta(p.instagram_id);
-        setEditDept(p.department ?? "");
       }
       if (balanceRes.ok) {
         const b = await balanceRes.json();
@@ -71,7 +68,6 @@ export default function MyPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         instagram_id: editInsta,
-        department: editDept || null,
       }),
     });
     setSaving(false);
@@ -79,9 +75,7 @@ export default function MyPage() {
       setError("저장에 실패했습니다");
       return;
     }
-    setProfile((p) =>
-      p ? { ...p, instagram_id: editInsta, department: editDept || null } : p,
-    );
+    setProfile((p) => (p ? { ...p, instagram_id: editInsta } : p));
     setSection("main");
   }
 
@@ -183,7 +177,7 @@ export default function MyPage() {
                       @{profile.instagram_id}
                     </p>
                     <p className="text-sm t-sub mt-0.5 truncate">
-                      {profile.department ?? "학과 미입력"} · {profile.email}
+                      {profile.email}
                     </p>
                   </div>
                 </div>
@@ -232,7 +226,7 @@ export default function MyPage() {
               {
                 icon: "✏️",
                 label: "프로필 수정",
-                sub: "인스타 ID, 학과 변경",
+                sub: "인스타 ID 변경",
                 action: () => setSection("edit"),
               },
               {
@@ -392,25 +386,6 @@ export default function MyPage() {
                   </span>
                   으로 설정해주세요
                 </p>
-              </div>
-
-              <div className="space-y-2">
-                <Label
-                  htmlFor="edit-dept"
-                  className="t-text text-sm font-medium chosun-title"
-                >
-                  학과{" "}
-                  <span className="t-muted font-normal text-xs">(선택)</span>
-                </Label>
-                <Input
-                  id="edit-dept"
-                  type="text"
-                  placeholder="ex. 컴퓨터과학과"
-                  value={editDept}
-                  onChange={(e) => setEditDept(e.target.value)}
-                  className="rounded-xl bg-transparent t-text h-12"
-                  style={{ border: "1.5px solid var(--border-accent)" }}
-                />
               </div>
 
               {error && (

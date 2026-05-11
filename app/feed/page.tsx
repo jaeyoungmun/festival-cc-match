@@ -8,7 +8,6 @@ type Character = "마님" | "아씨" | "돌쇠" | "도령";
 type Profile = {
   id: string;
   instagram_id: string;
-  department: string | null;
   name?: string | null;
   character?: Character;
 };
@@ -304,16 +303,6 @@ export default function FeedPage() {
                       {displayName}
                     </p>
                   </div>
-
-                  {/* 학과 */}
-                  {profile.department && (
-                    <p
-                      className="text-center text-sm t-sub mb-5"
-                      style={{ fontFamily: "'Nanum Myeongjo', serif" }}
-                    >
-                      {profile.department}
-                    </p>
-                  )}
 
                   {/* 점선 구분 */}
                   <div className="chosun-divider mb-4" />
