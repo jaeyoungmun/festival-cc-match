@@ -138,6 +138,15 @@ export default function ChooseCharacterPage() {
                   <span className="text-sm font-medium t-text chosun-title">
                     {c.name}
                   </span>
+                  <span
+                    className="text-xs t-sub text-center leading-snug px-1"
+                    style={{
+                      fontFamily: "'Nanum Myeongjo', serif",
+                      minHeight: 32,
+                    }}
+                  >
+                    &ldquo;{c.quote}&rdquo;
+                  </span>
                 </button>
               ))}
             </div>

@@ -288,6 +288,15 @@ function ProfileForm() {
                       <span className="text-sm font-medium t-text chosun-title">
                         {c.name}
                       </span>
+                      <span
+                        className="text-xs t-sub text-center leading-snug"
+                        style={{
+                          fontFamily: "'Nanum Myeongjo', serif",
+                          minHeight: 32,
+                        }}
+                      >
+                        &ldquo;{c.quote}&rdquo;
+                      </span>
                     </button>
                   ))}
                 </div>

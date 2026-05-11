@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   charactersByGender,
+  CHARACTERS,
   type CharacterName,
   type Gender,
 } from "@/lib/characters";
@@ -182,18 +183,34 @@ export default function MyPage() {
                 }}
               />
               <div style={{ padding: "22px" }}>
-                <div className="flex items-center gap-4 mb-5">
+                <div className="flex items-center gap-4 mb-3">
                   <div
-                    className="flex items-center justify-center text-3xl flex-shrink-0"
+                    className="flex items-center justify-center flex-shrink-0"
                     style={{
-                      width: 64,
-                      height: 64,
+                      width: 72,
+                      height: 72,
                       borderRadius: 12,
                       background: "var(--accent-soft)",
                       border: "2px solid var(--border-accent)",
+                      overflow: "hidden",
                     }}
                   >
-                    {profile.gender === "male" ? "🙋‍♂️" : "🙋‍♀️"}
+                    {profile.character ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={CHARACTERS[profile.character].svg}
+                        alt={profile.character}
+                        style={{
+                          width: "90%",
+                          height: "90%",
+                          objectFit: "contain",
+                        }}
+                      />
+                    ) : (
+                      <span style={{ fontSize: 28 }}>
+                        {profile.gender === "male" ? "🙋‍♂️" : "🙋‍♀️"}
+                      </span>
+                    )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p
@@ -205,8 +222,29 @@ export default function MyPage() {
                     <p className="text-sm t-sub mt-0.5 truncate">
                       {profile.department ?? "학과 미입력"} · {profile.email}
                     </p>
+                    {profile.character && (
+                      <p
+                        className="text-xs chosun-title mt-1"
+                        style={{ color: "var(--chosun-vermillion)" }}
+                      >
+                        {profile.character}
+                      </p>
+                    )}
                   </div>
                 </div>
+
+                {/* 캐릭터 멘트 */}
+                {profile.character && (
+                  <p
+                    className="text-xs t-sub text-center mb-4 px-2"
+                    style={{
+                      fontFamily: "'Nanum Myeongjo', serif",
+                      lineHeight: 1.6,
+                    }}
+                  >
+                    &ldquo;{CHARACTERS[profile.character].quote}&rdquo;
+                  </p>
+                )}
 
                 {/* 뽑기권 잔여 */}
                 <div
@@ -474,6 +512,15 @@ export default function MyPage() {
                           />
                           <span className="text-sm font-medium t-text chosun-title">
                             {c.name}
+                          </span>
+                          <span
+                            className="text-xs t-sub text-center leading-snug px-1"
+                            style={{
+                              fontFamily: "'Nanum Myeongjo', serif",
+                              minHeight: 32,
+                            }}
+                          >
+                            &ldquo;{c.quote}&rdquo;
                           </span>
                         </button>
                       ))}

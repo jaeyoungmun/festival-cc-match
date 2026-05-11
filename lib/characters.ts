@@ -13,32 +13,37 @@ export type CharacterMeta = {
   quote: string;
 };
 
-const PLACEHOLDER_QUOTE = "좋은 인연을 기다리는 평범한 한 사람의 짧은 이야기";
+const CHA_QUOTE = {
+  manim: "내 곁에 머무는 것만으로도 당신을 특별하게 만들어 줄 여유",
+  assi: "흩날리는 꽃잎처럼, 당신의 마음에 사뿐히 내려앉고 싶어요",
+  dolsoe: "어떤 바람에도 흔들리지 않고 당신을 지켜낼 단단한 버팀목",
+  doryeong: "어지러운 글공부보다, 당신의 눈동자를 읽는 것이 더 즐겁구료",
+};
 
 export const CHARACTERS: Record<CharacterName, CharacterMeta> = {
   마님: {
     name: "마님",
     svg: "/characters/manim.svg",
     gender: "female",
-    quote: PLACEHOLDER_QUOTE,
+    quote: CHA_QUOTE.manim,
   },
   아씨: {
     name: "아씨",
     svg: "/characters/assi.svg",
     gender: "female",
-    quote: PLACEHOLDER_QUOTE,
+    quote: CHA_QUOTE.assi,
   },
   돌쇠: {
     name: "돌쇠",
     svg: "/characters/dolsoe.svg",
     gender: "male",
-    quote: PLACEHOLDER_QUOTE,
+    quote: CHA_QUOTE.dolsoe,
   },
   도령: {
     name: "도령",
     svg: "/characters/doryeong.svg",
     gender: "male",
-    quote: PLACEHOLDER_QUOTE,
+    quote: CHA_QUOTE.doryeong,
   },
 };
 
@@ -57,8 +62,7 @@ export function charactersByGender(gender: Gender): CharacterMeta[] {
 
 export function isCharacterName(value: unknown): value is CharacterName {
   return (
-    typeof value === "string" &&
-    (CHARACTER_NAMES as string[]).includes(value)
+    typeof value === "string" && (CHARACTER_NAMES as string[]).includes(value)
   );
 }
 
