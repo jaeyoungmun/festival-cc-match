@@ -39,7 +39,11 @@ export async function GET() {
   if (lastSeen?.target_id) {
     const { data: currentProfile } = await supabase
       .from("profiles")
+<<<<<<< HEAD
       .select("id, instagram_id, department, character")
+=======
+      .select("id, instagram_id")
+>>>>>>> develop
       .eq("id", lastSeen.target_id)
       .maybeSingle();
 

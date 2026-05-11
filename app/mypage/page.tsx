@@ -14,7 +14,6 @@ import {
 
 type Profile = {
   instagram_id: string;
-  department: string | null;
   gender: string;
   email: string;
   character: CharacterName | null;
@@ -32,8 +31,11 @@ export default function MyPage() {
   const [error, setError] = useState("");
 
   const [editInsta, setEditInsta] = useState("");
+<<<<<<< HEAD
   const [editDept, setEditDept] = useState("");
   const [editCharacter, setEditCharacter] = useState<CharacterName | "">("");
+=======
+>>>>>>> develop
 
   useEffect(() => {
     async function load() {
@@ -55,8 +57,11 @@ export default function MyPage() {
         const p = await profileRes.json();
         setProfile(p);
         setEditInsta(p.instagram_id);
+<<<<<<< HEAD
         setEditDept(p.department ?? "");
         setEditCharacter(p.character ?? "");
+=======
+>>>>>>> develop
       }
       if (balanceRes.ok) {
         const b = await balanceRes.json();
@@ -84,8 +89,11 @@ export default function MyPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         instagram_id: editInsta,
+<<<<<<< HEAD
         department: editDept || null,
         character: editCharacter,
+=======
+>>>>>>> develop
       }),
     });
     setSaving(false);
@@ -93,6 +101,7 @@ export default function MyPage() {
       setError("저장에 실패했습니다");
       return;
     }
+<<<<<<< HEAD
     setProfile((p) =>
       p
         ? {
@@ -103,6 +112,9 @@ export default function MyPage() {
           }
         : p,
     );
+=======
+    setProfile((p) => (p ? { ...p, instagram_id: editInsta } : p));
+>>>>>>> develop
     setSection("main");
   }
 
@@ -220,7 +232,7 @@ export default function MyPage() {
                       @{profile.instagram_id}
                     </p>
                     <p className="text-sm t-sub mt-0.5 truncate">
-                      {profile.department ?? "학과 미입력"} · {profile.email}
+                      {profile.email}
                     </p>
                     {profile.character && (
                       <p
@@ -290,7 +302,7 @@ export default function MyPage() {
               {
                 icon: "✏️",
                 label: "프로필 수정",
-                sub: "인스타 ID, 학과 변경",
+                sub: "인스타 ID 변경",
                 action: () => setSection("edit"),
               },
               {
@@ -452,6 +464,7 @@ export default function MyPage() {
                 </p>
               </div>
 
+<<<<<<< HEAD
               <div className="space-y-2">
                 <Label
                   htmlFor="edit-dept"
@@ -528,6 +541,8 @@ export default function MyPage() {
                   </div>
                 )}
 
+=======
+>>>>>>> develop
               {error && (
                 <p
                   className="text-xs text-center mt-4"

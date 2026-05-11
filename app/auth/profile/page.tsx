@@ -15,8 +15,11 @@ function ProfileForm() {
   const [passwordConfirm, setPasswordConfirm] = useState("");
   const [instagramId, setInstagramId] = useState("");
   const [gender, setGender] = useState<"male" | "female" | "">("");
+<<<<<<< HEAD
   const [character, setCharacter] = useState<CharacterName | "">("");
   const [department, setDepartment] = useState("");
+=======
+>>>>>>> develop
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [showPw, setShowPw] = useState(false);
@@ -66,8 +69,11 @@ function ProfileForm() {
       body: JSON.stringify({
         instagram_id: instagramId,
         gender,
+<<<<<<< HEAD
         character,
         department: department || null,
+=======
+>>>>>>> develop
       }),
     });
 
@@ -254,6 +260,7 @@ function ProfileForm() {
               </div>
             </div>
 
+<<<<<<< HEAD
             {/* 캐릭터 — 성별 선택 후 노출 */}
             {gender && (
               <div className="space-y-2 mb-5">
@@ -303,6 +310,8 @@ function ProfileForm() {
               </div>
             )}
 
+=======
+>>>>>>> develop
             {error && (
               <p
                 className="text-xs text-center mb-4"

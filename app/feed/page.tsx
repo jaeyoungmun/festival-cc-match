@@ -7,7 +7,6 @@ import { CHARACTERS, type CharacterName } from "@/lib/characters";
 type Profile = {
   id: string;
   instagram_id: string;
-  department: string | null;
   name?: string | null;
   character?: CharacterName;
 };
@@ -296,6 +295,7 @@ export default function FeedPage() {
                     </p>
                   </div>
 
+<<<<<<< HEAD
                   {/* 캐릭터 멘트 */}
                   <p
                     className="text-center text-xs t-sub px-4 mb-3"
@@ -318,6 +318,8 @@ export default function FeedPage() {
                     </p>
                   )}
 
+=======
+>>>>>>> develop
                   {/* 점선 구분 */}
                   <div className="chosun-divider mb-4" />
 
