@@ -119,9 +119,7 @@ export default function FeedPage() {
     setState("card");
   }
 
-  const character = profile
-    ? (profile.character ?? null)
-    : null;
+  const character = profile ? (profile.character ?? null) : null;
   const displayName = profile ? (profile.name ?? pickName(profile.id)) : "";
 
   return (
@@ -143,7 +141,11 @@ export default function FeedPage() {
         <div className="chosun-layout-top px-6 pt-10 pb-9">
           {/* 헤더 */}
           <header className="flex items-center justify-between mb-7">
-            <div className="flex items-center gap-2">
+            <div
+              className="flex items-center gap-2"
+              onClick={() => router.push("/")}
+              style={{ cursor: "pointer" }}
+            >
               <span className="text-xl">🏮</span>
               <h1
                 className="font-bold t-accent-text chosun-title"
