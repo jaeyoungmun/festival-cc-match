@@ -33,27 +33,51 @@ const STEPS = [
   },
 ];
 
+type Stats = {
+  count: number;
+  next: { threshold: number; rolls: number; remaining: number } | null;
+  milestones: { threshold: number; rolls: number; achieved: boolean }[];
+};
+
 export default function LandingPage() {
   const router = useRouter();
-  const [checking, setChecking] = useState(true);
+  const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
+  const [stats, setStats] = useState<Stats | null>(null);
 
+  // 로그인 상태만 확인 (자동 리다이렉트 X — 카운터를 보여주려고 랜딩에 머무름)
   useEffect(() => {
     const supabase = createClient();
     supabase.auth
       .getUser()
       .then(({ data: { user } }: { data: { user: any } }) => {
-        if (user) router.replace("/feed");
-        else setChecking(false);
+        setLoggedIn(!!user);
       });
-  }, [router]);
+  }, []);
 
-  if (checking) {
-    return (
-      <div className="min-h-screen t-page flex items-center justify-center">
-        <div className="w-8 h-8 rounded-full t-accent-bg animate-pulse" />
-      </div>
-    );
-  }
+  // 가입자 수 카운터 — 30초 폴링
+  useEffect(() => {
+    let cancelled = false;
+    async function load() {
+      try {
+        const res = await fetch("/api/stats/signups");
+        if (!res.ok) return;
+        const data = await res.json();
+        if (!cancelled) setStats(data);
+      } catch {}
+    }
+    load();
+    const t = setInterval(load, 30000);
+    return () => {
+      cancelled = true;
+      clearInterval(t);
+    };
+  }, []);
+
+  // 버튼 동작 — 로그인 상태에 따라 분기 (loggedIn이 null인 동안엔 signup으로,
+  // proxy.ts가 로그인된 유저는 자동으로 /feed로 보내줌)
+  const startHref = loggedIn ? "/feed" : "/auth/signup";
+  const startLabel = loggedIn ? "피드로 이동 →" : "지금 시작하기 →";
+  const headerLabel = loggedIn ? "피드" : "로그인";
 
   return (
     <main className="min-h-screen t-page relative overflow-hidden chosun-body">
@@ -102,7 +126,7 @@ export default function LandingPage() {
             </span>
           </div>
           <button
-            onClick={() => router.push("/auth/signup")}
+            onClick={() => router.push(startHref)}
             className="chosun-btn font-semibold chosun-title"
             style={{
               fontSize: 13,
@@ -111,7 +135,7 @@ export default function LandingPage() {
               letterSpacing: "0.04em",
             }}
           >
-            로그인
+            {headerLabel}
           </button>
         </header>
 
@@ -122,7 +146,9 @@ export default function LandingPage() {
             <div
               className="anim-fade-up chosun-seal"
               style={{ width: 64, height: 64, fontSize: 38 }}
-            ></div>
+            >
+              緣
+            </div>
           </div>
 
           {/* 부제 뱃지 */}
@@ -163,7 +189,7 @@ export default function LandingPage() {
             style={{ maxWidth: 360 }}
           >
             <button
-              onClick={() => router.push("/auth/signup")}
+              onClick={() => router.push(startHref)}
               className="chosun-btn chosun-title w-full"
               style={{
                 padding: "16px 0",
@@ -172,13 +198,116 @@ export default function LandingPage() {
                 letterSpacing: "0.04em",
               }}
             >
-              지금 시작하기 →
+              {startLabel}
             </button>
-            <p className="text-xs t-muted">
-              학번(@sangmyung.kr)으로 가입 가능해요
-            </p>
+            {!loggedIn && (
+              <p className="text-xs t-muted">
+                학번(@sangmyung.kr)으로 가입 가능해요
+              </p>
+            )}
           </div>
         </section>
+
+        {/* 가입자 카운터 + 마일스톤 보상 진행률 */}
+        {stats && (
+          <section className="px-6 pb-4 anim-fade-up anim-delay-4">
+            <div
+              className="chosun-bordered"
+              style={{ padding: "20px 22px", borderRadius: 16 }}
+            >
+              <div className="flex items-baseline justify-between mb-3">
+                <p className="text-xs font-medium t-muted chosun-title">
+                  · 가입자 보상 이벤트 ·
+                </p>
+                <p
+                  className="font-bold t-accent-text chosun-title"
+                  style={{ fontSize: "1.3rem", letterSpacing: "0.02em" }}
+                >
+                  {stats.count}
+                  <span className="t-muted text-xs ml-0.5">명</span>
+                </p>
+              </div>
+
+              {/* 진행률 바 */}
+              {stats.next && (
+                <>
+                  <div
+                    className="relative w-full mb-2"
+                    style={{
+                      height: 8,
+                      borderRadius: 999,
+                      background: "var(--bg-card-hover)",
+                      border: "1px solid var(--border)",
+                      overflow: "hidden",
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: `${Math.min(
+                          100,
+                          (stats.count / stats.next.threshold) * 100,
+                        )}%`,
+                        height: "100%",
+                        background:
+                          "linear-gradient(90deg, var(--chosun-vermillion), var(--chosun-gold))",
+                        transition: "width 0.5s ease",
+                      }}
+                    />
+                  </div>
+                  <p className="text-xs t-sub mb-3">
+                    다음 보상까지{" "}
+                    <span
+                      className="font-semibold"
+                      style={{ color: "var(--chosun-vermillion)" }}
+                    >
+                      {stats.next.remaining}명
+                    </span>
+                    {" — "}
+                    {stats.next.threshold}명 달성 시 모든 회원에게{" "}
+                    <span className="font-semibold t-text">
+                      뽑기권 {stats.next.rolls}장
+                    </span>{" "}
+                    지급
+                  </p>
+                </>
+              )}
+              {!stats.next && (
+                <p className="text-xs t-sub mb-3">
+                  모든 마일스톤을 달성했어요! 🎉
+                </p>
+              )}
+
+              {/* 마일스톤 뱃지 */}
+              <div className="flex gap-1.5">
+                {stats.milestones.map((m) => (
+                  <div
+                    key={m.threshold}
+                    className="flex-1 text-center chosun-title"
+                    style={{
+                      padding: "6px 4px",
+                      borderRadius: 6,
+                      fontSize: 11,
+                      background: m.achieved
+                        ? "var(--accent-soft)"
+                        : "var(--bg-card-hover)",
+                      border: `1px solid ${
+                        m.achieved
+                          ? "var(--chosun-vermillion)"
+                          : "var(--border)"
+                      }`,
+                      color: m.achieved
+                        ? "var(--chosun-vermillion)"
+                        : "var(--text-muted)",
+                    }}
+                  >
+                    {m.achieved && "✓ "}
+                    {m.threshold}명 +{m.rolls}장
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
 
         {/* 구분선 */}
         <div
@@ -273,7 +402,9 @@ export default function LandingPage() {
               ].map((pkg, i) => (
                 <button
                   key={i}
-                  onClick={() => router.push("/auth/signup")}
+                  onClick={() =>
+                    router.push(loggedIn ? "/redeem" : "/auth/signup")
+                  }
                   className="chosun-card-hover text-center"
                   style={{
                     padding: "20px 14px",

@@ -5,11 +5,20 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  charactersByGender,
+  CHARACTERS,
+  oppositeGender,
+  type CharacterName,
+  type Gender,
+} from "@/lib/characters";
 
 type Profile = {
   instagram_id: string;
   gender: string;
   email: string;
+  character: CharacterName | null;
+  character_preference: CharacterName | null;
 };
 
 type Section = "main" | "edit" | "delete-confirm";
@@ -22,8 +31,12 @@ export default function MyPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [loadError, setLoadError] = useState("");
 
   const [editInsta, setEditInsta] = useState("");
+  const [editCharacter, setEditCharacter] = useState<CharacterName | "">("");
+  // null = "둘다" (필터 없음).
+  const [editPref, setEditPref] = useState<CharacterName | null>(null);
 
   useEffect(() => {
     async function load() {
@@ -45,6 +58,13 @@ export default function MyPage() {
         const p = await profileRes.json();
         setProfile(p);
         setEditInsta(p.instagram_id);
+        setEditCharacter(p.character ?? "");
+        setEditPref(p.character_preference ?? null);
+      } else {
+        const errJson = await profileRes.json().catch(() => ({}));
+        setLoadError(
+          errJson?.error ?? `프로필을 불러오지 못했어요 (${profileRes.status})`,
+        );
       }
       if (balanceRes.ok) {
         const b = await balanceRes.json();
@@ -61,6 +81,10 @@ export default function MyPage() {
       setError("인스타 ID를 입력해주세요");
       return;
     }
+    if (!editCharacter) {
+      setError("캐릭터를 선택해주세요");
+      return;
+    }
     setSaving(true);
     setError("");
     const res = await fetch("/api/user/profile", {
@@ -68,14 +92,26 @@ export default function MyPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         instagram_id: editInsta,
+        character: editCharacter,
+        character_preference: editPref,
       }),
     });
     setSaving(false);
     if (!res.ok) {
-      setError("저장에 실패했습니다");
+      const errJson = await res.json().catch(() => ({}));
+      setError(errJson?.error ?? `저장에 실패했습니다 (${res.status})`);
       return;
     }
-    setProfile((p) => (p ? { ...p, instagram_id: editInsta } : p));
+    setProfile((p) =>
+      p
+        ? {
+            ...p,
+            instagram_id: editInsta,
+            character: editCharacter,
+            character_preference: editPref,
+          }
+        : p,
+    );
     setSection("main");
   }
 
@@ -140,6 +176,33 @@ export default function MyPage() {
           </h1>
         </header>
 
+        {/* 프로필 로드 실패 — 빈 화면 방지 */}
+        {section === "main" && !profile && loadError && (
+          <div className="px-6 pb-10 anim-fade-up">
+            <div
+              className="chosun-bordered text-center"
+              style={{ padding: 26, borderRadius: 18 }}
+            >
+              <div className="text-4xl mb-3">⚠️</div>
+              <p className="font-bold t-text chosun-title mb-2">
+                프로필을 불러올 수 없어요
+              </p>
+              <p className="text-sm t-sub leading-relaxed">{loadError}</p>
+              <button
+                onClick={() => window.location.reload()}
+                className="chosun-btn chosun-title mt-4"
+                style={{
+                  padding: "10px 24px",
+                  borderRadius: 10,
+                  fontSize: 14,
+                }}
+              >
+                다시 시도
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* ── 메인 섹션 ── */}
         {section === "main" && profile && (
           <div className="px-6 pb-10 space-y-4 anim-fade-up">
@@ -156,18 +219,34 @@ export default function MyPage() {
                 }}
               />
               <div style={{ padding: "22px" }}>
-                <div className="flex items-center gap-4 mb-5">
+                <div className="flex items-center gap-4 mb-3">
                   <div
-                    className="flex items-center justify-center text-3xl flex-shrink-0"
+                    className="flex items-center justify-center flex-shrink-0"
                     style={{
-                      width: 64,
-                      height: 64,
+                      width: 72,
+                      height: 72,
                       borderRadius: 12,
                       background: "var(--accent-soft)",
                       border: "2px solid var(--border-accent)",
+                      overflow: "hidden",
                     }}
                   >
-                    {profile.gender === "male" ? "🙋‍♂️" : "🙋‍♀️"}
+                    {profile.character ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={CHARACTERS[profile.character].svg}
+                        alt={profile.character}
+                        style={{
+                          width: "90%",
+                          height: "90%",
+                          objectFit: "contain",
+                        }}
+                      />
+                    ) : (
+                      <span style={{ fontSize: 28 }}>
+                        {profile.gender === "male" ? "🙋‍♂️" : "🙋‍♀️"}
+                      </span>
+                    )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p
@@ -179,8 +258,29 @@ export default function MyPage() {
                     <p className="text-sm t-sub mt-0.5 truncate">
                       {profile.email}
                     </p>
+                    {profile.character && (
+                      <p
+                        className="text-xs chosun-title mt-1"
+                        style={{ color: "var(--chosun-vermillion)" }}
+                      >
+                        {profile.character}
+                      </p>
+                    )}
                   </div>
                 </div>
+
+                {/* 캐릭터 멘트 */}
+                {profile.character && (
+                  <p
+                    className="text-xs t-sub text-center mb-4 px-2"
+                    style={{
+                      fontFamily: "'Nanum Myeongjo', serif",
+                      lineHeight: 1.6,
+                    }}
+                  >
+                    &ldquo;{CHARACTERS[profile.character].quote}&rdquo;
+                  </p>
+                )}
 
                 {/* 뽑기권 잔여 */}
                 <div
@@ -387,6 +487,135 @@ export default function MyPage() {
                   으로 설정해주세요
                 </p>
               </div>
+
+              {/* 캐릭터 */}
+              {profile &&
+                (profile.gender === "male" || profile.gender === "female") && (
+                  <div className="space-y-2 mt-5">
+                    <Label className="t-text text-sm font-medium chosun-title">
+                      캐릭터
+                    </Label>
+                    <div className="grid grid-cols-2 gap-3">
+                      {charactersByGender(profile.gender as Gender).map((c) => (
+                        <button
+                          key={c.name}
+                          type="button"
+                          onClick={() => setEditCharacter(c.name)}
+                          className="chosun-card-hover flex flex-col items-center gap-2"
+                          style={{
+                            padding: "12px 8px",
+                            borderRadius: 12,
+                            border: `2px solid ${
+                              editCharacter === c.name
+                                ? "var(--chosun-vermillion)"
+                                : "var(--border)"
+                            }`,
+                            background:
+                              editCharacter === c.name
+                                ? "var(--accent-soft)"
+                                : "var(--bg-card)",
+                            cursor: "pointer",
+                          }}
+                        >
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={c.svg}
+                            alt={c.name}
+                            style={{
+                              width: 64,
+                              height: 64,
+                              objectFit: "contain",
+                            }}
+                          />
+                          <span className="text-sm font-medium t-text chosun-title">
+                            {c.name}
+                          </span>
+                          <span
+                            className="text-xs t-sub text-center leading-snug px-1"
+                            style={{
+                              fontFamily: "'Nanum Myeongjo', serif",
+                              minHeight: 32,
+                            }}
+                          >
+                            &ldquo;{c.quote}&rdquo;
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+              {/* 선호 캐릭터 (피드 필터) */}
+              {profile &&
+                (profile.gender === "male" || profile.gender === "female") && (
+                  <div className="space-y-2 mt-5">
+                    <Label className="t-text text-sm font-medium chosun-title">
+                      보고 싶은 이성
+                    </Label>
+                    <p className="text-xs t-muted">
+                      선택한 캐릭터의 이성만 피드에 보여요
+                    </p>
+                    <div className="grid grid-cols-3 gap-2">
+                      {[
+                        ...charactersByGender(
+                          oppositeGender(profile.gender as Gender),
+                        ).map((c) => ({
+                          value: c.name as CharacterName | null,
+                          label: c.name,
+                          svg: c.svg,
+                        })),
+                        { value: null, label: "둘다", svg: null },
+                      ].map((opt) => {
+                        const selected = editPref === opt.value;
+                        return (
+                          <button
+                            key={opt.label}
+                            type="button"
+                            onClick={() => setEditPref(opt.value)}
+                            className="chosun-card-hover flex flex-col items-center justify-center gap-1"
+                            style={{
+                              padding: "10px 6px",
+                              borderRadius: 12,
+                              border: `2px solid ${
+                                selected
+                                  ? "var(--chosun-vermillion)"
+                                  : "var(--border)"
+                              }`,
+                              background: selected
+                                ? "var(--accent-soft)"
+                                : "var(--bg-card)",
+                              cursor: "pointer",
+                              minHeight: 88,
+                            }}
+                          >
+                            {opt.svg ? (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img
+                                src={opt.svg}
+                                alt={opt.label}
+                                style={{
+                                  width: 48,
+                                  height: 48,
+                                  objectFit: "contain",
+                                }}
+                              />
+                            ) : (
+                              <span
+                                className="chosun-han"
+                                style={{ fontSize: 28, lineHeight: 1 }}
+                              >
+                                緣
+                              </span>
+                            )}
+                            <span className="text-xs font-medium t-text chosun-title">
+                              {opt.label}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
 
               {error && (
                 <p
