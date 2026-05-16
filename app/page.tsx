@@ -138,7 +138,6 @@ export default function LandingPage() {
             {headerLabel}
           </button>
         </header>
-
         {/* 히어로 */}
         <section className="px-6 pt-8 pb-12 text-center">
           {/* 도장 한자 */}
@@ -207,9 +206,8 @@ export default function LandingPage() {
             )}
           </div>
         </section>
-
         {/* 가입자 카운터 + 마일스톤 보상 진행률 */}
-        {stats && (
+        {/* {stats && (
           <section className="px-6 pb-4 anim-fade-up anim-delay-4">
             <div
               className="chosun-bordered"
@@ -226,10 +224,10 @@ export default function LandingPage() {
                   {stats.count}
                   <span className="t-muted text-xs ml-0.5">명</span>
                 </p>
-              </div>
+              </div> */}
 
-              {/* 진행률 바 */}
-              {stats.next && (
+        {/* 진행률 바 */}
+        {/* {stats.next && (
                 <>
                   <div
                     className="relative w-full mb-2"
@@ -275,10 +273,10 @@ export default function LandingPage() {
                 <p className="text-xs t-sub mb-3">
                   모든 마일스톤을 달성했어요! 🎉
                 </p>
-              )}
+              )} */}
 
-              {/* 마일스톤 뱃지 */}
-              <div className="flex gap-1.5">
+        {/* 마일스톤 뱃지 */}
+        {/* <div className="flex gap-1.5">
                 {stats.milestones.map((m) => (
                   <div
                     key={m.threshold}
@@ -307,14 +305,12 @@ export default function LandingPage() {
               </div>
             </div>
           </section>
-        )}
-
+        )} */}
         {/* 구분선 */}
         <div
           className="anim-fade-up anim-delay-4 chosun-divider"
           style={{ width: "calc(100% - 48px)", margin: "16px auto" }}
         />
-
         {/* 3단계 안내 */}
         <section className="anim-fade-up anim-delay-4 px-6 py-10">
           <p
@@ -365,7 +361,6 @@ export default function LandingPage() {
             ))}
           </div>
         </section>
-
         {/* 인연패 안내 */}
         <section className="px-6 py-10 pt-0">
           <div
@@ -448,7 +443,6 @@ export default function LandingPage() {
             </div>
           </div>
         </section>
-
         {/* 푸터 */}
         <footer className="px-8 py-6 text-center mt-auto">
           <p
