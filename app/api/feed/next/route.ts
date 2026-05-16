@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient, createServiceClient } from "@/lib/supabase/server";
 import { pickNextProfile } from "@/lib/feed";
+import { isEventOpen } from "@/lib/eventGate";
 
 // GET /api/feed/next
 //
@@ -17,6 +18,13 @@ import { pickNextProfile } from "@/lib/feed";
 //   { empty: true }                 — 모든 프로필을 다 봄
 //   { needTickets: true }           — 잔액 부족 + 현재 카드 없음
 export async function GET() {
+  if (!isEventOpen()) {
+    return NextResponse.json(
+      { error: "본 행사 시작 전이에요", code: "BEFORE_OPEN" },
+      { status: 403 },
+    );
+  }
+
   const supabase = await createClient();
 
   const {

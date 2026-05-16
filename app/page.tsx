@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { isEventOpen, timeUntilOpen } from "@/lib/eventGate";
 
 const FLOATERS = [
   { emoji: "🏮", x: 8, y: 12, size: 26, delay: 0, dur: 9 },
@@ -43,6 +44,22 @@ export default function LandingPage() {
   const router = useRouter();
   const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
   const [stats, setStats] = useState<Stats | null>(null);
+  // SSR/CSR 시간차로 인한 hydration 불일치를 피하려고 마운트 후에만 계산한다.
+  const [open, setOpen] = useState<boolean | null>(null);
+  const [remaining, setRemaining] = useState<ReturnType<
+    typeof timeUntilOpen
+  > | null>(null);
+
+  useEffect(() => {
+    setOpen(isEventOpen());
+    setRemaining(timeUntilOpen());
+    // 분 단위로 카운트다운 갱신
+    const t = setInterval(() => {
+      setOpen(isEventOpen());
+      setRemaining(timeUntilOpen());
+    }, 60_000);
+    return () => clearInterval(t);
+  }, []);
 
   // 로그인 상태만 확인 (자동 리다이렉트 X — 카운터를 보여주려고 랜딩에 머무름)
   useEffect(() => {
@@ -73,11 +90,21 @@ export default function LandingPage() {
     };
   }, []);
 
-  // 버튼 동작 — 로그인 상태에 따라 분기 (loggedIn이 null인 동안엔 signup으로,
-  // proxy.ts가 로그인된 유저는 자동으로 /feed로 보내줌)
-  const startHref = loggedIn ? "/feed" : "/auth/signup";
-  const startLabel = loggedIn ? "피드로 이동 →" : "지금 시작하기 →";
-  const headerLabel = loggedIn ? "피드" : "로그인";
+  // 버튼 동작 — 로그인 상태 + 오픈 여부로 분기.
+  // 오픈 전엔 /feed로 보내봤자 proxy가 다시 /로 돌리므로 /mypage로 안내.
+  // open이 null(첫 렌더)인 동안엔 안전하게 오픈 전으로 가정.
+  const isOpen = open === true;
+  const startHref = loggedIn
+    ? isOpen
+      ? "/feed"
+      : "/mypage"
+    : "/auth/signup";
+  const startLabel = loggedIn
+    ? isOpen
+      ? "피드로 이동 →"
+      : "마이페이지로 →"
+    : "지금 시작하기 →";
+  const headerLabel = loggedIn ? (isOpen ? "피드" : "마이페이지") : "로그인";
 
   return (
     <main className="min-h-screen t-page relative overflow-hidden chosun-body">
@@ -206,6 +233,59 @@ export default function LandingPage() {
             )}
           </div>
         </section>
+
+        {/* 오픈 카운트다운 — 본 행사 시작 전에만 노출 */}
+        {open === false && remaining && (
+          <section className="px-6 pb-4 anim-fade-up anim-delay-4">
+            <div
+              className="chosun-bordered text-center"
+              style={{ padding: "22px 20px", borderRadius: 16, margin: 8 }}
+            >
+              <p
+                className="text-xs font-medium t-muted mb-3 chosun-title"
+                style={{ letterSpacing: "0.18em" }}
+              >
+                · 본 행사 오픈까지 ·
+              </p>
+              <div className="flex items-baseline justify-center gap-2 mb-2">
+                {remaining.days > 0 && (
+                  <>
+                    <span
+                      className="font-bold t-accent-text chosun-title"
+                      style={{ fontSize: "2rem", letterSpacing: "0.02em" }}
+                    >
+                      {remaining.days}
+                    </span>
+                    <span className="t-muted text-xs">일</span>
+                  </>
+                )}
+                <span
+                  className="font-bold t-accent-text chosun-title"
+                  style={{ fontSize: "2rem", letterSpacing: "0.02em" }}
+                >
+                  {remaining.hours}
+                </span>
+                <span className="t-muted text-xs">시간</span>
+                <span
+                  className="font-bold t-accent-text chosun-title"
+                  style={{ fontSize: "2rem", letterSpacing: "0.02em" }}
+                >
+                  {remaining.minutes}
+                </span>
+                <span className="t-muted text-xs">분</span>
+              </div>
+              <p
+                className="text-xs t-sub"
+                style={{ fontFamily: "'Nanum Myeongjo', serif" }}
+              >
+                {loggedIn
+                  ? "가입 완료! 오픈 시 바로 인연을 만나실 수 있어요"
+                  : "지금 가입하면 오픈 시 바로 인연을 만나실 수 있어요"}
+              </p>
+            </div>
+          </section>
+        )}
+
         {/* 가입자 카운터 + 마일스톤 보상 진행률 */}
         {/* {stats && (
           <section className="px-6 pb-4 anim-fade-up anim-delay-4">

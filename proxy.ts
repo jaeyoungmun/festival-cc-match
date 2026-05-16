@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { isEventOpen } from "./lib/eventGate";
 
 // 로그인 없이 접근 가능한 경로
 const PUBLIC_PATHS = [
@@ -17,9 +18,22 @@ const CHARACTER_EXEMPT_PATHS = [
   "/mypage",
 ];
 
+// 본 행사 시작 전 차단되는 경로 — 가입/마이페이지는 허용, 피드/충전만 막는다.
+const BEFORE_OPEN_BLOCKED = ["/feed", "/redeem"];
+
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const response = NextResponse.next({ request });
+
+  // 본 행사 오픈 전 — 피드/충전 경로는 무조건 홈으로 (로그인 여부 무관)
+  if (!isEventOpen()) {
+    const blocked = BEFORE_OPEN_BLOCKED.some(
+      (p) => pathname === p || pathname.startsWith(p + "/"),
+    );
+    if (blocked) {
+      return NextResponse.redirect(new URL("/", request.url));
+    }
+  }
 
   // Supabase 세션 갱신
   const supabase = createServerClient(

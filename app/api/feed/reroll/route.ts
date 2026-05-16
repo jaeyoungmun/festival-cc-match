@@ -1,6 +1,7 @@
 import { NextResponse, NextRequest } from "next/server";
 import { createClient, createServiceClient } from "@/lib/supabase/server";
 import { pickNextProfile } from "@/lib/feed";
+import { isEventOpen } from "@/lib/eventGate";
 
 // POST /api/feed/reroll
 //
@@ -15,6 +16,13 @@ import { pickNextProfile } from "@/lib/feed";
 //   { empty: true, remaining: number }     — 더 이상 볼 사람 없음 (잔액은 차감됨)
 //   { code: 'NO_REROLLS_LEFT' }            — 잔액 부족
 export async function POST(request: NextRequest) {
+  if (!isEventOpen()) {
+    return NextResponse.json(
+      { error: "본 행사 시작 전이에요", code: "BEFORE_OPEN" },
+      { status: 403 },
+    );
+  }
+
   const supabase = await createClient();
 
   const {
