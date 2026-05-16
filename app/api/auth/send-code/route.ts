@@ -35,7 +35,17 @@ export async function POST(request: NextRequest) {
   });
 
   if (error) {
-    console.error("[send-code]", error);
+    console.error("[send-code]", { status: error.status, code: error.code, message: error.message });
+
+    // Supabase Auth는 이메일/IP rate limit 초과 시 429를 반환한다.
+    // 외부 SMTP(Resend 등) 전환 후에도 Auth 자체의 호출 빈도 제한은 그대로 적용됨.
+    if (error.status === 429) {
+      return NextResponse.json(
+        { error: "잠시 후 다시 시도해주세요" },
+        { status: 429 },
+      );
+    }
+
     return NextResponse.json(
       { error: "이메일 발송에 실패했습니다" },
       { status: 500 },
