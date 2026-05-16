@@ -2,22 +2,18 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
-
-type Character = "마님" | "아씨" | "돌쇠" | "도령";
+import { CHARACTERS, type CharacterName } from "@/lib/characters";
 
 type Profile = {
   id: string;
   instagram_id: string;
-  department: string | null;
   name?: string | null;
-  character?: Character;
+  character?: CharacterName;
 };
 
 type FeedState = "loading" | "card" | "empty" | "error" | "no_rerolls";
 
-const CHARACTERS: Character[] = ["마님", "아씨", "돌쇠", "도령"];
-
-// 임시: 서버에서 character/name 안 내려올 때 id 기반 결정적 mock
+// 이름은 아직 서버에서 안 내려오므로 id 해시 mock 유지 (추후 DB에 추가되면 교체)
 const MOCK_NAMES = [
   "김도윤",
   "이서연",
@@ -36,9 +32,6 @@ function hash(s: string) {
   let h = 0;
   for (const c of s) h = (h * 31 + c.charCodeAt(0)) | 0;
   return Math.abs(h);
-}
-function pickCharacter(id: string): Character {
-  return CHARACTERS[hash(id) % CHARACTERS.length];
 }
 function pickName(id: string) {
   return MOCK_NAMES[hash(id + "n") % MOCK_NAMES.length];
@@ -126,9 +119,7 @@ export default function FeedPage() {
     setState("card");
   }
 
-  const character = profile
-    ? (profile.character ?? pickCharacter(profile.id))
-    : null;
+  const character = profile ? (profile.character ?? null) : null;
   const displayName = profile ? (profile.name ?? pickName(profile.id)) : "";
 
   return (
@@ -150,7 +141,11 @@ export default function FeedPage() {
         <div className="chosun-layout-top px-6 pt-10 pb-9">
           {/* 헤더 */}
           <header className="flex items-center justify-between mb-7">
-            <div className="flex items-center gap-2">
+            <div
+              className="flex items-center gap-2"
+              onClick={() => router.push("/")}
+              style={{ cursor: "pointer" }}
+            >
               <span className="text-xl">🏮</span>
               <h1
                 className="font-bold t-accent-text chosun-title"
@@ -266,7 +261,7 @@ export default function FeedPage() {
                     </p>
                   </div>
 
-                  {/* 캐릭터 이미지 자리 */}
+                  {/* 캐릭터 이미지 */}
                   <div className="flex justify-center mb-5">
                     <div
                       className="chosun-char-frame flex items-center justify-center"
@@ -276,19 +271,16 @@ export default function FeedPage() {
                         borderRadius: 6,
                       }}
                     >
-                      <p
-                        className="text-xs t-muted text-center px-3"
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={CHARACTERS[character].svg}
+                        alt={character}
                         style={{
-                          fontFamily: "'Nanum Myeongjo', serif",
-                          letterSpacing: "0.1em",
+                          width: "85%",
+                          height: "85%",
+                          objectFit: "contain",
                         }}
-                      >
-                        {character} 초상
-                        <br />
-                        <span style={{ fontSize: 10, opacity: 0.7 }}>
-                          (이미지 추후 첨부)
-                        </span>
-                      </p>
+                      />
                     </div>
                   </div>
 
@@ -305,15 +297,17 @@ export default function FeedPage() {
                     </p>
                   </div>
 
-                  {/* 학과 */}
-                  {profile.department && (
-                    <p
-                      className="text-center text-sm t-sub mb-5"
-                      style={{ fontFamily: "'Nanum Myeongjo', serif" }}
-                    >
-                      {profile.department}
-                    </p>
-                  )}
+                  {/* 캐릭터 멘트 */}
+                  <p
+                    className="text-center text-xs t-sub px-4 mb-3"
+                    style={{
+                      fontFamily: "'Nanum Myeongjo', serif",
+                      letterSpacing: "0.02em",
+                      lineHeight: 1.6,
+                    }}
+                  >
+                    &ldquo;{CHARACTERS[character].quote}&rdquo;
+                  </p>
 
                   {/* 점선 구분 */}
                   <div className="chosun-divider mb-4" />

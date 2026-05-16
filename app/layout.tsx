@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "CC - Campus Connection",
+  title: "컴과시그널",
   description: "축제에서 스친 인연, 다시 볼 수 있을지 궁금하다면?",
 };
 

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient, createServiceClient } from "@/lib/supabase/server";
+import { pickNextProfile } from "@/lib/feed";
 
 // GET /api/feed/next
 //
@@ -9,13 +10,12 @@ import { createClient, createServiceClient } from "@/lib/supabase/server";
 //   2. 아직 본 프로필이 없으면 → 뽑기권 1장을 차감하고 새 프로필을 뽑아서 반환
 //      (가입 직후 첫 진입 시. 잔액 0이면 needTickets 응답)
 //
+// 후보 선정은 lib/feed.ts의 pickNextProfile에 위임한다 (캐릭터 선호도 필터 포함).
+//
 // Response:
 //   { profile: {...} }              — 카드 표시
 //   { empty: true }                 — 모든 프로필을 다 봄
 //   { needTickets: true }           — 잔액 부족 + 현재 카드 없음
-//
-// 주의: seen_users 테이블에 created_at 컬럼이 필요합니다.
-//   없다면: ALTER TABLE seen_users ADD COLUMN created_at TIMESTAMPTZ DEFAULT now();
 export async function GET() {
   const supabase = await createClient();
 
@@ -39,7 +39,7 @@ export async function GET() {
   if (lastSeen?.target_id) {
     const { data: currentProfile } = await supabase
       .from("profiles")
-      .select("id, instagram_id, department")
+      .select("id, instagram_id, character")
       .eq("id", lastSeen.target_id)
       .maybeSingle();
 
@@ -49,18 +49,16 @@ export async function GET() {
     // 현재 카드의 프로필이 삭제된 경우 → 새로 뽑는 흐름으로 폴백
   }
 
-  // 2. 현재 카드 없음 → 사전체크 먼저 (차감 전에 뽑을 사람이 있는지 확인)
-  const { data, error } = await supabase.rpc("get_next_profile", {
-    viewer_id: user.id,
-  });
-
-  if (error) {
-    console.error("[feed/next] rpc error:", error);
+  // 2. 사전체크 먼저 (차감 전에 뽑을 사람이 있는지 확인)
+  let candidate;
+  try {
+    candidate = await pickNextProfile(supabase, user.id);
+  } catch (e) {
+    console.error("[feed/next] pickNextProfile error:", e);
     return NextResponse.json({ error: "서버 오류" }, { status: 500 });
   }
 
-  if (!data || data.length === 0) {
-    // 뽑을 사람 없음 → 차감하지 않고 empty 반환
+  if (!candidate) {
     return NextResponse.json({ empty: true });
   }
 
@@ -78,15 +76,13 @@ export async function GET() {
     return NextResponse.json({ error: "서버 오류" }, { status: 500 });
   }
 
-  const profile = data[0];
-
   // 4. seen으로 마킹 (가장 최근 seen = 현재 카드)
   await supabase
     .from("seen_users")
     .upsert(
-      { viewer_id: user.id, target_id: profile.id },
+      { viewer_id: user.id, target_id: candidate.id },
       { onConflict: "viewer_id,target_id" },
     );
 
-  return NextResponse.json({ profile });
+  return NextResponse.json({ profile: candidate });
 }

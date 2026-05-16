@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
-type Tab = "generate" | "list" | "grant";
+type Tab = "generate" | "list" | "grant" | "event";
 
 type CodeRow = {
   code: string;
@@ -94,6 +94,7 @@ export default function AdminPage() {
               ["generate", "코드 발급"],
               ["list", "코드 조회"],
               ["grant", "직접 충전"],
+              ["event", "이벤트 PIN"],
             ] as const
           ).map(([key, label]) => (
             <button
@@ -127,6 +128,7 @@ export default function AdminPage() {
           {tab === "generate" && <GenerateTab />}
           {tab === "list" && <ListTab />}
           {tab === "grant" && <GrantTab />}
+          {tab === "event" && <EventTab />}
         </div>
       </div>
     </main>
@@ -547,6 +549,219 @@ function GrantTab() {
               {result.balance}장
             </span>
           </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─────────────────────────── 이벤트 PIN (공유) ───────────────────────────
+function EventTab() {
+  const [rolls, setRolls] = useState(1);
+  const [label, setLabel] = useState("");
+  const [expiresAt, setExpiresAt] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [issued, setIssued] = useState<{
+    code: string;
+    rolls: number;
+    label: string | null;
+    expires_at: string | null;
+  } | null>(null);
+  const [copied, setCopied] = useState(false);
+  const [stats, setStats] = useState<{
+    count: number;
+    next: { threshold: number; rolls: number; remaining: number } | null;
+    milestones: { threshold: number; rolls: number; achieved: boolean }[];
+  } | null>(null);
+
+  useEffect(() => {
+    fetch("/api/stats/signups")
+      .then((r) => r.json())
+      .then((d) => setStats(d))
+      .catch(() => {});
+  }, []);
+
+  async function handleIssue(e: React.FormEvent) {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+    setIssued(null);
+    setCopied(false);
+    const res = await fetch("/api/admin/codes/shared", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        rolls,
+        label: label || undefined,
+        expires_at: expiresAt || undefined,
+      }),
+    });
+    const data = await res.json();
+    setLoading(false);
+    if (!res.ok) {
+      setError(data.error ?? "발급 실패");
+      return;
+    }
+    setIssued(data);
+  }
+
+  function handleCopy() {
+    if (!issued) return;
+    navigator.clipboard.writeText(issued.code);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
+  }
+
+  return (
+    <div>
+      {/* 마일스톤 현황 */}
+      {stats && (
+        <div
+          className="chosun-bordered mb-4"
+          style={{ padding: 16, borderRadius: 14 }}
+        >
+          <p className="text-xs t-muted mb-2 chosun-title">현재 가입자</p>
+          <p
+            className="font-bold t-accent-text chosun-title mb-3"
+            style={{ fontSize: "1.5rem" }}
+          >
+            {stats.count}명
+          </p>
+          <div className="space-y-1.5">
+            {stats.milestones.map((m) => (
+              <div
+                key={m.threshold}
+                className="flex items-center justify-between text-xs"
+                style={{
+                  padding: "6px 10px",
+                  borderRadius: 6,
+                  background: m.achieved
+                    ? "var(--accent-soft)"
+                    : "var(--bg-card-hover)",
+                  opacity: m.achieved ? 1 : 0.7,
+                }}
+              >
+                <span className="t-text">
+                  {m.achieved ? "✓ " : ""}
+                  {m.threshold}명 → {m.rolls}장 보상
+                </span>
+                {m.achieved && (
+                  <span
+                    className="chosun-han"
+                    style={{
+                      color: "var(--chosun-vermillion)",
+                      fontSize: 11,
+                    }}
+                  >
+                    達
+                  </span>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <form
+        onSubmit={handleIssue}
+        className="chosun-bordered"
+        style={{ padding: 22, borderRadius: 16 }}
+      >
+        <p className="text-sm font-semibold t-text mb-1 chosun-title">
+          공유 PIN 발급
+        </p>
+        <p className="text-xs t-muted mb-4">
+          모든 유저가 1회씩 사용할 수 있는 코드입니다. 카톡방·공지에서 공유.
+        </p>
+
+        <div className="grid grid-cols-2 gap-3 mb-3">
+          <div>
+            <label className="block text-xs t-muted mb-1">뽑기권</label>
+            <input
+              type="number"
+              min={1}
+              max={1000}
+              value={rolls}
+              onChange={(e) => setRolls(Number(e.target.value))}
+              className="w-full rounded-xl t-text bg-transparent h-11 px-3 chosun-title"
+              style={{ border: "1.5px solid var(--border-accent)" }}
+            />
+          </div>
+          <div>
+            <label className="block text-xs t-muted mb-1">만료 (선택)</label>
+            <input
+              type="datetime-local"
+              value={expiresAt}
+              onChange={(e) => setExpiresAt(e.target.value)}
+              className="w-full rounded-xl t-text bg-transparent h-11 px-3"
+              style={{ border: "1.5px solid var(--border-accent)" }}
+            />
+          </div>
+        </div>
+        <label className="block text-xs t-muted mb-1">라벨 (선택)</label>
+        <input
+          type="text"
+          placeholder="예: 100명 돌파 보상"
+          value={label}
+          onChange={(e) => setLabel(e.target.value)}
+          className="w-full rounded-xl t-text bg-transparent h-11 px-3 mb-4"
+          style={{ border: "1.5px solid var(--border-accent)" }}
+        />
+
+        {error && (
+          <p
+            className="text-xs text-center mb-3"
+            style={{ color: "var(--chosun-vermillion)" }}
+          >
+            {error}
+          </p>
+        )}
+
+        <button
+          type="submit"
+          disabled={loading}
+          className="chosun-btn chosun-title w-full"
+          style={{
+            padding: "12px 0",
+            borderRadius: 10,
+            fontSize: 14,
+            letterSpacing: "0.04em",
+          }}
+        >
+          {loading ? "발급 중..." : "공유 PIN 발급"}
+        </button>
+      </form>
+
+      {issued && (
+        <div
+          className="chosun-bordered mt-5 text-center"
+          style={{ padding: 22, borderRadius: 16 }}
+        >
+          <p className="text-xs t-muted mb-2">
+            {issued.label ?? "공유 PIN"} · 1인 {issued.rolls}장
+          </p>
+          <p
+            className="chosun-title t-text mb-3"
+            style={{
+              fontSize: "1.7rem",
+              letterSpacing: "0.15em",
+            }}
+          >
+            {issued.code}
+          </p>
+          {issued.expires_at && (
+            <p className="text-xs t-muted mb-3">
+              만료: {new Date(issued.expires_at).toLocaleString()}
+            </p>
+          )}
+          <button
+            onClick={handleCopy}
+            className="chosun-btn-outline chosun-title text-xs px-5 py-2"
+            style={{ borderRadius: 8 }}
+          >
+            {copied ? "복사됨 ✓" : "코드 복사"}
+          </button>
         </div>
       )}
     </div>
