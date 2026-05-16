@@ -74,3 +74,19 @@ export function isValidCharacterForGender(
   if (gender !== "male" && gender !== "female") return false;
   return CHARACTERS[character].gender === gender;
 }
+
+export function oppositeGender(gender: Gender): Gender {
+  return gender === "male" ? "female" : "male";
+}
+
+// 선호 캐릭터는 본인 성별의 반대여야 함 (피드는 이성만 노출).
+// null은 "둘다" (= 필터 없음).
+export function isValidPreferenceForGender(
+  value: unknown,
+  myGender: string,
+): value is CharacterName | null {
+  if (value === null) return true;
+  if (!isCharacterName(value)) return false;
+  if (myGender !== "male" && myGender !== "female") return false;
+  return CHARACTERS[value].gender === oppositeGender(myGender);
+}

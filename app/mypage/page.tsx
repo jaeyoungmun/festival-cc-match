@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import {
   charactersByGender,
   CHARACTERS,
+  oppositeGender,
   type CharacterName,
   type Gender,
 } from "@/lib/characters";
@@ -17,6 +18,7 @@ type Profile = {
   gender: string;
   email: string;
   character: CharacterName | null;
+  character_preference: CharacterName | null;
 };
 
 type Section = "main" | "edit" | "delete-confirm";
@@ -29,9 +31,12 @@ export default function MyPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [loadError, setLoadError] = useState("");
 
   const [editInsta, setEditInsta] = useState("");
   const [editCharacter, setEditCharacter] = useState<CharacterName | "">("");
+  // null = "둘다" (필터 없음).
+  const [editPref, setEditPref] = useState<CharacterName | null>(null);
 
   useEffect(() => {
     async function load() {
@@ -54,6 +59,12 @@ export default function MyPage() {
         setProfile(p);
         setEditInsta(p.instagram_id);
         setEditCharacter(p.character ?? "");
+        setEditPref(p.character_preference ?? null);
+      } else {
+        const errJson = await profileRes.json().catch(() => ({}));
+        setLoadError(
+          errJson?.error ?? `프로필을 불러오지 못했어요 (${profileRes.status})`,
+        );
       }
       if (balanceRes.ok) {
         const b = await balanceRes.json();
@@ -82,11 +93,13 @@ export default function MyPage() {
       body: JSON.stringify({
         instagram_id: editInsta,
         character: editCharacter,
+        character_preference: editPref,
       }),
     });
     setSaving(false);
     if (!res.ok) {
-      setError("저장에 실패했습니다");
+      const errJson = await res.json().catch(() => ({}));
+      setError(errJson?.error ?? `저장에 실패했습니다 (${res.status})`);
       return;
     }
     setProfile((p) =>
@@ -95,6 +108,7 @@ export default function MyPage() {
             ...p,
             instagram_id: editInsta,
             character: editCharacter,
+            character_preference: editPref,
           }
         : p,
     );
@@ -161,6 +175,33 @@ export default function MyPage() {
                 : "마이페이지"}
           </h1>
         </header>
+
+        {/* 프로필 로드 실패 — 빈 화면 방지 */}
+        {section === "main" && !profile && loadError && (
+          <div className="px-6 pb-10 anim-fade-up">
+            <div
+              className="chosun-bordered text-center"
+              style={{ padding: 26, borderRadius: 18 }}
+            >
+              <div className="text-4xl mb-3">⚠️</div>
+              <p className="font-bold t-text chosun-title mb-2">
+                프로필을 불러올 수 없어요
+              </p>
+              <p className="text-sm t-sub leading-relaxed">{loadError}</p>
+              <button
+                onClick={() => window.location.reload()}
+                className="chosun-btn chosun-title mt-4"
+                style={{
+                  padding: "10px 24px",
+                  borderRadius: 10,
+                  fontSize: 14,
+                }}
+              >
+                다시 시도
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* ── 메인 섹션 ── */}
         {section === "main" && profile && (
@@ -500,6 +541,78 @@ export default function MyPage() {
                           </span>
                         </button>
                       ))}
+                    </div>
+                  </div>
+                )}
+
+              {/* 선호 캐릭터 (피드 필터) */}
+              {profile &&
+                (profile.gender === "male" || profile.gender === "female") && (
+                  <div className="space-y-2 mt-5">
+                    <Label className="t-text text-sm font-medium chosun-title">
+                      보고 싶은 이성
+                    </Label>
+                    <p className="text-xs t-muted">
+                      선택한 캐릭터의 이성만 피드에 보여요
+                    </p>
+                    <div className="grid grid-cols-3 gap-2">
+                      {[
+                        ...charactersByGender(
+                          oppositeGender(profile.gender as Gender),
+                        ).map((c) => ({
+                          value: c.name as CharacterName | null,
+                          label: c.name,
+                          svg: c.svg,
+                        })),
+                        { value: null, label: "둘다", svg: null },
+                      ].map((opt) => {
+                        const selected = editPref === opt.value;
+                        return (
+                          <button
+                            key={opt.label}
+                            type="button"
+                            onClick={() => setEditPref(opt.value)}
+                            className="chosun-card-hover flex flex-col items-center justify-center gap-1"
+                            style={{
+                              padding: "10px 6px",
+                              borderRadius: 12,
+                              border: `2px solid ${
+                                selected
+                                  ? "var(--chosun-vermillion)"
+                                  : "var(--border)"
+                              }`,
+                              background: selected
+                                ? "var(--accent-soft)"
+                                : "var(--bg-card)",
+                              cursor: "pointer",
+                              minHeight: 88,
+                            }}
+                          >
+                            {opt.svg ? (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img
+                                src={opt.svg}
+                                alt={opt.label}
+                                style={{
+                                  width: 48,
+                                  height: 48,
+                                  objectFit: "contain",
+                                }}
+                              />
+                            ) : (
+                              <span
+                                className="chosun-han"
+                                style={{ fontSize: 28, lineHeight: 1 }}
+                              >
+                                緣
+                              </span>
+                            )}
+                            <span className="text-xs font-medium t-text chosun-title">
+                              {opt.label}
+                            </span>
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
                 )}

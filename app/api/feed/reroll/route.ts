@@ -1,10 +1,13 @@
 import { NextResponse, NextRequest } from "next/server";
 import { createClient, createServiceClient } from "@/lib/supabase/server";
+import { pickNextProfile } from "@/lib/feed";
 
 // POST /api/feed/reroll
 //
 // 동작: 뽑기권 1장 차감 + 새 프로필 뽑아서 한 번에 반환.
 // 기존 카드(current_profile_id)는 이미 seen_users에 있으므로 자연스럽게 다음 뽑기에서 제외됨.
+//
+// 후보 선정은 lib/feed.ts의 pickNextProfile에 위임한다 (캐릭터 선호도 필터 포함).
 //
 // Request body: { current_profile_id?: string }
 // Response:
@@ -36,18 +39,15 @@ export async function POST(request: NextRequest) {
   }
 
   // 2. 사전 체크 — 더 뽑을 프로필이 있는지 먼저 확인 (차감 전)
-  //    없으면 뽑기권을 소비하지 않고 empty 반환
-  const { data: nextData, error: rpcError } = await supabase.rpc(
-    "get_next_profile",
-    { viewer_id: user.id },
-  );
-
-  if (rpcError) {
-    console.error("[feed/reroll] rpc error:", rpcError);
+  let candidate;
+  try {
+    candidate = await pickNextProfile(supabase, user.id);
+  } catch (e) {
+    console.error("[feed/reroll] pickNextProfile error:", e);
     return NextResponse.json({ error: "서버 오류" }, { status: 500 });
   }
 
-  if (!nextData || nextData.length === 0) {
+  if (!candidate) {
     return NextResponse.json({ empty: true });
   }
 
@@ -69,8 +69,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "서버 오류" }, { status: 500 });
   }
 
-  const candidate = nextData[0];
-
   // 4. 새 카드를 seen으로 마킹 (가장 최근 seen = 현재 카드)
   await supabase
     .from("seen_users")
@@ -79,12 +77,5 @@ export async function POST(request: NextRequest) {
       { onConflict: "viewer_id,target_id" },
     );
 
-  // 5. RPC가 character를 반환하지 않을 수 있어 풀 프로필 다시 조회
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("id, instagram_id, character")
-    .eq("id", candidate.id)
-    .maybeSingle();
-
-  return NextResponse.json({ profile: profile ?? candidate, remaining });
+  return NextResponse.json({ profile: candidate, remaining });
 }
