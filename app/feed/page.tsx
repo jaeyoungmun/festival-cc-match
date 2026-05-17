@@ -53,7 +53,9 @@ export default function FeedPage() {
     setProfile(data.profile);
     setCardKey((k) => k + 1);
     setState("card");
-  }, []);
+    // /next가 새 카드를 뽑았다면 잔액이 차감됐다. 확실히 반영.
+    fetchBalance();
+  }, [fetchBalance]);
 
   useEffect(() => {
     if (initialized.current) return;
@@ -89,10 +91,12 @@ export default function FeedPage() {
       setState("empty");
       return;
     }
-    setBalance(data.remaining);
+    // 응답의 remaining을 우선 반영하고, 안전망으로 /api/user/balance 재조회.
+    if (typeof data.remaining === "number") setBalance(data.remaining);
     setProfile(data.profile);
     setCardKey((k) => k + 1);
     setState("card");
+    fetchBalance();
   }
 
   const character = profile ? (profile.character ?? null) : null;
@@ -202,7 +206,9 @@ export default function FeedPage() {
                   }}
                 >
                   {/* 도장 (오른쪽 상단) */}
-                  <div
+                  <button
+                    type="button"
+                    onClick={() => router.push("/")}
                     className="chosun-seal absolute"
                     style={{
                       top: 18,
@@ -210,10 +216,11 @@ export default function FeedPage() {
                       width: 38,
                       height: 38,
                       fontSize: 22,
+                      cursor: "pointer",
                     }}
                   >
                     緣
-                  </div>
+                  </button>
 
                   {/* 캐릭터 라벨 */}
                   <div className="flex flex-col items-center mb-4">
