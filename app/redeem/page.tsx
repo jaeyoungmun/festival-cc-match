@@ -87,12 +87,19 @@ export default function RedeemPage() {
           <div className="px-6 pb-10 anim-fade-up">
             {/* 안내 */}
             <div className="text-center mb-7">
-              <div
+              <button
+                type="button"
+                onClick={() => router.push("/")}
                 className="chosun-seal mx-auto mb-4 chosun-han"
-                style={{ width: 56, height: 56, fontSize: 28 }}
+                style={{
+                  width: 56,
+                  height: 56,
+                  fontSize: 28,
+                  cursor: "pointer",
+                }}
               >
                 券
-              </div>
+              </button>
               <p
                 className="font-bold t-text mb-2 chosun-title"
                 style={{ fontSize: "1.3rem", letterSpacing: "-0.01em" }}
@@ -183,12 +190,19 @@ export default function RedeemPage() {
         {result && (
           <div className="px-6 pb-10 anim-fade-up text-center">
             <div className="flex flex-col items-center gap-3 mb-7">
-              <div
+              <button
+                type="button"
+                onClick={() => router.push("/")}
                 className="chosun-seal chosun-han"
-                style={{ width: 72, height: 72, fontSize: 40 }}
+                style={{
+                  width: 72,
+                  height: 72,
+                  fontSize: 40,
+                  cursor: "pointer",
+                }}
               >
                 縁
-              </div>
+              </button>
               <h2
                 className="font-bold t-text chosun-title"
                 style={{ fontSize: "1.7rem", letterSpacing: "-0.01em" }}

@@ -83,7 +83,9 @@ function ProfileForm() {
       return;
     }
 
-    router.replace("/feed");
+    // 가입 직후엔 랜딩으로 보냄. /feed로 보내면 잔액 0인 신규 유저는
+    // needTickets 응답을 받아 곧장 충전 화면으로 튕기게 되어 흐름이 거칠다.
+    router.replace("/");
   }
 
   const ready =
@@ -110,12 +112,19 @@ function ProfileForm() {
       >
         <div className="w-full" style={{ maxWidth: 360 }}>
           <div className="text-center mb-8 anim-fade-up">
-            <div
+            <button
+              type="button"
+              onClick={() => router.push("/")}
               className="chosun-seal mx-auto mb-4 chosun-han"
-              style={{ width: 56, height: 56, fontSize: 28 }}
+              style={{
+                width: 56,
+                height: 56,
+                fontSize: 28,
+                cursor: "pointer",
+              }}
             >
               緣
-            </div>
+            </button>
             <h1
               className="font-bold t-text chosun-title"
               style={{ fontSize: "1.6rem", letterSpacing: "-0.01em" }}
