@@ -28,6 +28,9 @@ export async function POST(request: NextRequest) {
   const body = await request.json().catch(() => null);
   const { current_profile_id } = body ?? {};
 
+  // profiles 테이블 RLS가 본인 row 한정이라 다른 유저 카드는 service_role로 SELECT.
+  const svc = await createServiceClient();
+
   // 1. 기존 카드를 seen으로 마킹 (이미 있으면 onConflict로 무시)
   if (current_profile_id) {
     await supabase
@@ -41,7 +44,7 @@ export async function POST(request: NextRequest) {
   // 2. 사전 체크 — 더 뽑을 프로필이 있는지 먼저 확인 (차감 전)
   let candidate;
   try {
-    candidate = await pickNextProfile(supabase, user.id);
+    candidate = await pickNextProfile(svc, user.id);
   } catch (e) {
     console.error("[feed/reroll] pickNextProfile error:", e);
     return NextResponse.json({ error: "서버 오류" }, { status: 500 });
@@ -52,7 +55,6 @@ export async function POST(request: NextRequest) {
   }
 
   // 3. 뽑을 사람이 있음 → 이제 차감
-  const svc = await createServiceClient();
   const { data: remaining, error: balanceError } = await svc.rpc(
     "decrement_reroll_balance",
     { p_user_id: user.id },

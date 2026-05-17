@@ -8,6 +8,7 @@ export type FeedCandidate = {
   id: string;
   instagram_id: string;
   character: CharacterName;
+  name: string | null;
 };
 
 // 다음 카드를 한 장 뽑아 반환. 없으면 null.
@@ -21,6 +22,10 @@ export type FeedCandidate = {
 //  - 이미 seen_users에 있는 대상 제외
 //
 // 후보 풀에서 무작위로 1명 선정.
+//
+// 호출자는 반드시 라우트에서 auth 검증 후 service_role 클라이언트를 넘긴다.
+// profiles 테이블 RLS가 본인 row로 한정돼 있어 다른 유저 후보 SELECT가 막히기 때문.
+// 반환 컬럼이 코드에서 명시적으로 좁혀지므로 컬럼 노출 통제는 여기서 한다.
 export async function pickNextProfile(
   supabase: SupabaseClient,
   viewerId: string,
@@ -65,7 +70,7 @@ export async function pickNextProfile(
 
   let query = supabase
     .from("profiles")
-    .select("id, instagram_id, character")
+    .select("id, instagram_id, character, name")
     .eq("gender", oppositeGender(viewer.gender))
     .neq("id", viewerId)
     .not("character", "is", null)

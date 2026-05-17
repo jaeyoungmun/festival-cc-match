@@ -27,6 +27,10 @@ export async function GET() {
     return NextResponse.json({ error: "인증이 필요합니다" }, { status: 401 });
   }
 
+  // profiles 테이블 RLS가 본인 row 한정이라 다른 유저의 카드를 SELECT하려면
+  // service_role이 필요. 인증은 위에서 이미 통과했으니 안전하다.
+  const svc = await createServiceClient();
+
   // 1. 가장 최근 seen 항목 = 현재 보고 있던 카드
   const { data: lastSeen } = await supabase
     .from("seen_users")
@@ -37,9 +41,9 @@ export async function GET() {
     .maybeSingle();
 
   if (lastSeen?.target_id) {
-    const { data: currentProfile } = await supabase
+    const { data: currentProfile } = await svc
       .from("profiles")
-      .select("id, instagram_id, character")
+      .select("id, instagram_id, character, name")
       .eq("id", lastSeen.target_id)
       .maybeSingle();
 
@@ -52,7 +56,7 @@ export async function GET() {
   // 2. 사전체크 먼저 (차감 전에 뽑을 사람이 있는지 확인)
   let candidate;
   try {
-    candidate = await pickNextProfile(supabase, user.id);
+    candidate = await pickNextProfile(svc, user.id);
   } catch (e) {
     console.error("[feed/next] pickNextProfile error:", e);
     return NextResponse.json({ error: "서버 오류" }, { status: 500 });
@@ -63,7 +67,6 @@ export async function GET() {
   }
 
   // 3. 뽑을 사람이 있음 → 이제 차감
-  const svc = await createServiceClient();
   const { error: balanceError } = await svc.rpc("decrement_reroll_balance", {
     p_user_id: user.id,
   });
