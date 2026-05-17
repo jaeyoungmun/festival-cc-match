@@ -64,7 +64,11 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL("/feed", request.url));
   }
 
-  // 로그인 유저인데 character 없음 → /auth/character로 강제 (보호 경로에서만)
+  // 로그인 유저인데 프로필/캐릭터 미완료 → 강제로 입력 화면으로 (보호 경로에서만)
+  //
+  // 매직링크 흐름에서 Supabase가 redirect_to의 /auth/callback 경로를 떼고 Site URL로
+  // 떨어뜨리는 경우가 있어, callback 라우트의 신규/기존 분기 로직이 통째로 건너뛰어
+  // 프로필 없는 유저가 그대로 보호 경로에 도달할 수 있다. 여기서 한 번 더 막는다.
   if (user && !isPublic) {
     const exempt = CHARACTER_EXEMPT_PATHS.some(
       (p) => pathname === p || pathname.startsWith(p + "/"),
@@ -75,7 +79,13 @@ export async function proxy(request: NextRequest) {
         .select("character")
         .eq("id", user.id)
         .maybeSingle();
-      if (profile && !profile.character) {
+      if (!profile) {
+        const email = user.email ? encodeURIComponent(user.email) : "";
+        return NextResponse.redirect(
+          new URL(`/auth/profile?email=${email}`, request.url),
+        );
+      }
+      if (!profile.character) {
         return NextResponse.redirect(new URL("/auth/character", request.url));
       }
     }

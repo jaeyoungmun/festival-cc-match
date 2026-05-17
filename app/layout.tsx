@@ -1,9 +1,27 @@
 import type { Metadata } from "next";
 import "./globals.css";
 
+const SITE_NAME = "인연 찾기";
+const SITE_DESCRIPTION = "컴퓨터과학전공 부스에서 운영하는 시그널 [인연 찾기]";
+const SITE_URL = "https://smu-signal.com";
+
 export const metadata: Metadata = {
-  title: "컴과시그널",
-  description: "축제에서 스친 인연, 다시 볼 수 있을지 궁금하다면?",
+  metadataBase: new URL(SITE_URL),
+  title: SITE_NAME,
+  description: SITE_DESCRIPTION,
+  openGraph: {
+    type: "website",
+    locale: "ko_KR",
+    url: SITE_URL,
+    siteName: SITE_NAME,
+    title: SITE_NAME,
+    description: SITE_DESCRIPTION,
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: SITE_NAME,
+    description: SITE_DESCRIPTION,
+  },
 };
 
 export default function RootLayout({

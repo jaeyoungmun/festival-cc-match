@@ -69,7 +69,7 @@ function VerifyForm() {
 
           {/* 안내 카드 */}
           <div
-            className="chosun-bordered anim-fade-up anim-delay-1 text-left mb-6"
+            className="chosun-bordered anim-fade-up anim-delay-1 text-left mb-4"
             style={{ padding: 22, borderRadius: 16 }}
           >
             <div className="space-y-4">
@@ -77,7 +77,7 @@ function VerifyForm() {
                 { num: "一", text: "이메일 받은 편지함을 열어주세요" },
                 {
                   num: "二",
-                  text: "'컴과시그널' 메일의 링크를 클릭해주세요",
+                  text: "'인연 찾기' 메일의 링크를 클릭해주세요",
                 },
                 { num: "三", text: "자동으로 로그인돼요" },
               ].map((step, i) => (
@@ -100,6 +100,31 @@ function VerifyForm() {
                 </div>
               ))}
             </div>
+          </div>
+
+          {/* 스팸 폴더 안내 — 새 도메인이라 초반엔 스팸함으로 분류되는 경우 잦음 */}
+          <div
+            className="anim-fade-up anim-delay-1 mb-6"
+            style={{
+              padding: "12px 16px",
+              borderRadius: 12,
+              background: "var(--accent-soft)",
+              border: "1.5px solid var(--border-accent)",
+            }}
+          >
+            <p
+              className="text-xs t-sub leading-relaxed"
+              style={{ fontFamily: "'Nanum Myeongjo', serif" }}
+            >
+              <span
+                className="font-semibold"
+                style={{ color: "var(--chosun-vermillion)" }}
+              >
+                메일이 안 보이나요?
+              </span>{" "}
+              <span className="font-medium t-text">스팸 폴더</span>도 꼭
+              확인해주세요
+            </p>
           </div>
 
           {/* 재전송 */}
