@@ -90,7 +90,7 @@ export default function AdminPage() {
             >
               운영자 콘솔
             </h1>
-            <p className="text-xs t-muted">인연 찾기 admin</p>
+            <p className="text-xs t-muted">인연 맺기 admin</p>
           </div>
         </header>
 
@@ -115,13 +115,9 @@ export default function AdminPage() {
                 background:
                   tab === key ? "var(--chosun-btn-from)" : "var(--bg-card)",
                 color:
-                  tab === key
-                    ? "var(--accent-text)"
-                    : "var(--text-secondary)",
+                  tab === key ? "var(--accent-text)" : "var(--text-secondary)",
                 border: `1.5px solid ${
-                  tab === key
-                    ? "var(--chosun-btn-border)"
-                    : "var(--border)"
+                  tab === key ? "var(--chosun-btn-border)" : "var(--border)"
                 }`,
                 cursor: "pointer",
               }}
@@ -350,9 +346,7 @@ function ListTab() {
                 background:
                   filter === k ? "var(--chosun-btn-from)" : "var(--bg-card)",
                 color:
-                  filter === k
-                    ? "var(--accent-text)"
-                    : "var(--text-secondary)",
+                  filter === k ? "var(--accent-text)" : "var(--text-secondary)",
                 border: `1.5px solid ${
                   filter === k ? "var(--chosun-btn-from)" : "var(--border)"
                 }`,
@@ -377,7 +371,9 @@ function ListTab() {
         className="chosun-bordered"
         style={{ padding: 16, borderRadius: 14 }}
       >
-        {loading && <p className="text-sm t-muted text-center py-4">불러오는 중...</p>}
+        {loading && (
+          <p className="text-sm t-muted text-center py-4">불러오는 중...</p>
+        )}
         {!loading && codes.length === 0 && (
           <p className="text-sm t-muted text-center py-4">코드가 없어요</p>
         )}
@@ -480,9 +476,7 @@ function GrantTab() {
               inputMode="numeric"
               placeholder="202012345"
               value={studentId}
-              onChange={(e) =>
-                setStudentId(e.target.value.replace(/\D/g, ""))
-              }
+              onChange={(e) => setStudentId(e.target.value.replace(/\D/g, ""))}
               className="w-full rounded-xl t-text bg-transparent h-11 px-3 chosun-title"
               style={{ border: "1.5px solid var(--border-accent)" }}
               required
