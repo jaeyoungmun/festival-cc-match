@@ -127,7 +127,7 @@ function LoginForm() {
               className="font-bold t-text chosun-title"
               style={{ fontSize: "1.8rem", letterSpacing: "-0.01em" }}
             >
-              컴과시그널
+              인연 찾기
             </h1>
             <p className="text-sm t-sub mt-2">
               {step === "email" && "상명대 학번으로 시작해요"}
@@ -421,7 +421,7 @@ function LoginForm() {
               className="font-medium"
               style={{ color: "var(--chosun-vermillion)" }}
             >
-              컴과시그널
+              인연 찾기
             </span>{" "}
             이용약관에 동의한 것으로 간주돼요
           </p>

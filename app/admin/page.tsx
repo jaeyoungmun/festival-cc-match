@@ -83,7 +83,7 @@ export default function AdminPage() {
             >
               운영자 콘솔
             </h1>
-            <p className="text-xs t-muted">컴과시그널 admin</p>
+            <p className="text-xs t-muted">인연 찾기 admin</p>
           </div>
         </header>
 
