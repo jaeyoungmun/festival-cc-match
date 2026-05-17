@@ -44,15 +44,32 @@ export default function LandingPage() {
   const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
   const [stats, setStats] = useState<Stats | null>(null);
 
-  // 로그인 상태만 확인 (자동 리다이렉트 X — 카운터를 보여주려고 랜딩에 머무름)
+  // 로그인 상태 확인 + 매직링크 hash fallback 처리.
+  //
+  // Supabase가 매직링크 redirect_to의 /auth/callback 경로를 떼고 Site URL(=/)로
+  // 떨어뜨리면, hash fragment(#access_token=...)로 클라이언트 SDK가 세션은 만들지만
+  // /auth/profile로 가야 할 신규 유저가 그대로 랜딩에 머무른다. 이 경우를 잡아낸다.
   useEffect(() => {
     const supabase = createClient();
     supabase.auth
       .getUser()
-      .then(({ data: { user } }: { data: { user: any } }) => {
-        setLoggedIn(!!user);
+      .then(async ({ data: { user } }: { data: { user: any } }) => {
+        if (!user) {
+          setLoggedIn(false);
+          return;
+        }
+        setLoggedIn(true);
+        // 매직링크 hash로 막 세션 만들어진 직후엔 hash가 URL에 남는다.
+        // 그 흔적이 있으면 프로필 미완성 여부를 즉시 검사해서 입력 화면으로 보낸다.
+        const hasFreshAuthHash = window.location.hash.includes("access_token");
+        if (!hasFreshAuthHash) return;
+        const res = await fetch("/api/user/me");
+        if (res.status === 404) {
+          const email = encodeURIComponent(user.email ?? "");
+          router.replace(`/auth/profile?email=${email}`);
+        }
       });
-  }, []);
+  }, [router]);
 
   // 가입자 수 카운터 — 30초 폴링
   useEffect(() => {
