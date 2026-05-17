@@ -8,16 +8,19 @@ export default function RedeemPage() {
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [result, setResult] = useState<{ rolls: number; balance: number } | null>(
-    null,
-  );
+  const [result, setResult] = useState<{
+    rolls: number;
+    balance: number;
+  } | null>(null);
 
   // 입력 시 4-4 형식으로 자동 정렬 (ABCD-EFGH)
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     const cleaned = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "");
     const trimmed = cleaned.slice(0, 8);
     const formatted =
-      trimmed.length > 4 ? `${trimmed.slice(0, 4)}-${trimmed.slice(4)}` : trimmed;
+      trimmed.length > 4
+        ? `${trimmed.slice(0, 4)}-${trimmed.slice(4)}`
+        : trimmed;
     setCode(formatted);
     setError("");
   }
@@ -133,7 +136,8 @@ export default function RedeemPage() {
                 autoFocus
               />
               <p className="text-xs t-muted mt-2">
-                대소문자 구분 없이 입력 가능해요. 하이픈(-)은 자동으로 들어갑니다.
+                대소문자 구분 없이 입력 가능해요. 하이픈(-)은 자동으로
+                들어갑니다.
               </p>
 
               {error && (
@@ -169,7 +173,7 @@ export default function RedeemPage() {
                 💡 코드는 축제 부스에서 현금/계좌이체로 결제하시면 받으실 수
                 있어요.
                 <br />
-                위치: 부스 안내 / 카카오톡 오픈채팅에서 확인
+                위치: 에컬가는길목 컴퓨터과학전공 부스
               </p>
             </div>
           </div>
