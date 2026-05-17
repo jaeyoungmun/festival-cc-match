@@ -404,11 +404,10 @@ export default function LandingPage() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               {[
-                { label: "5장", price: "1,500원", per: "장당 300원" },
+                { label: "음료 + 뽑기 1회권", price: "2,500원" },
                 {
-                  label: "7장",
-                  price: "2,500원",
-                  per: "장당 357원",
+                  label: "뽑기 2회권",
+                  price: "1,000원",
                   hot: true,
                 },
               ].map((pkg, i) => (
@@ -451,9 +450,6 @@ export default function LandingPage() {
                     style={{ fontSize: 18 }}
                   >
                     {pkg.price}
-                  </p>
-                  <p className="t-muted mt-0.5" style={{ fontSize: 11 }}>
-                    {pkg.per}
                   </p>
                 </button>
               ))}
