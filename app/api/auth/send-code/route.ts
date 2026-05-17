@@ -3,7 +3,9 @@ import { createClient } from "@/lib/supabase/server";
 
 // POST /api/auth/send-code
 // Body: { email: string }
-// Magic Link 이메일 발송
+//
+// signUp으로 생성된 미확인 유저에게 Confirm Sign Up 메일을 재발송한다.
+// Magic Link 템플릿이 아닌 Confirm Sign Up 템플릿이 트리거되어야 {{ .Token }} 6자리가 박혀 나옴.
 export async function POST(request: NextRequest) {
   const body = await request.json().catch(() => null);
   const { email } = body ?? {};
@@ -23,15 +25,9 @@ export async function POST(request: NextRequest) {
 
   const supabase = await createClient();
 
-  // 요청 origin에서 자동으로 콜백 URL 생성 — dev / Vercel preview / 프로덕션 모두 동작.
-  // Supabase Auth → URL Configuration → Redirect URLs 화이트리스트에
-  // 사용할 도메인을 등록해두어야 함 (예: https://yourdomain.com/auth/callback).
-  const { error } = await supabase.auth.signInWithOtp({
+  const { error } = await supabase.auth.resend({
+    type: "signup",
     email,
-    options: {
-      shouldCreateUser: true,
-      emailRedirectTo: `${request.nextUrl.origin}/auth/callback`,
-    },
   });
 
   if (error) {

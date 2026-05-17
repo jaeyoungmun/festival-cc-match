@@ -78,17 +78,34 @@ function LoginForm() {
       setError("동의가 필요합니다");
       return;
     }
+    if (password.length < 8) {
+      setError("비밀번호는 8자 이상으로 설정해주세요");
+      return;
+    }
     setLoading(true);
     setError("");
-    const res = await fetch("/api/auth/send-code", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email }),
+    // signUp → Confirm Sign Up 템플릿이 발송됨. {{ .Token }} 6자리 코드 포함 필요.
+    const { error: signUpError } = await supabase.auth.signUp({
+      email,
+      password,
     });
-    const data = await res.json();
     setLoading(false);
-    if (!res.ok) {
-      setError(data.error ?? "이메일 발송에 실패했습니다");
+    if (signUpError) {
+      const msg = (signUpError.message ?? "").toLowerCase();
+      const status = (signUpError as { status?: number }).status;
+      if (
+        status === 429 ||
+        msg.includes("rate limit") ||
+        msg.includes("unexpected end of json")
+      ) {
+        setError("이메일 발송 한도를 초과했어요. 1시간 후 다시 시도해주세요");
+        return;
+      }
+      if (msg.includes("already") || msg.includes("registered")) {
+        setError("이미 가입된 이메일이에요. 처음으로 돌아가 로그인해주세요");
+        return;
+      }
+      setError("가입 요청에 실패했어요. 다시 시도해주세요");
       return;
     }
     router.push(`/auth/verify?email=${encodeURIComponent(email)}`);
@@ -127,7 +144,7 @@ function LoginForm() {
               className="font-bold t-text chosun-title"
               style={{ fontSize: "1.8rem", letterSpacing: "-0.01em" }}
             >
-              인연 찾기
+              인연 맺기
             </h1>
             <p className="text-sm t-sub mt-2">
               {step === "email" && "상명대 학번으로 시작해요"}
@@ -307,7 +324,7 @@ function LoginForm() {
                     처음 오셨군요!
                   </p>
                   <p className="text-xs t-sub mt-0.5">
-                    이메일 인증 후 비밀번호를 설정해요
+                    이메일로 6자리 인증 코드를 보내드려요
                   </p>
                 </div>
               </div>
@@ -322,6 +339,44 @@ function LoginForm() {
               >
                 <p className="text-xs t-muted mb-1">가입 이메일</p>
                 <p className="text-sm font-medium t-text">{email}</p>
+              </div>
+
+              <div className="space-y-2 mb-4">
+                <Label
+                  htmlFor="newPassword"
+                  className="t-text text-sm font-medium chosun-title"
+                >
+                  비밀번호
+                </Label>
+                <div className="relative">
+                  <Input
+                    id="newPassword"
+                    type={showPw ? "text" : "password"}
+                    placeholder="8자 이상"
+                    value={password}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      setError("");
+                    }}
+                    className="rounded-xl bg-transparent t-text h-12 pr-12"
+                    style={{
+                      border: "1.5px solid var(--border-accent)",
+                    }}
+                    required
+                    minLength={8}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPw((v) => !v)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-lg t-muted"
+                    style={{ cursor: "pointer" }}
+                  >
+                    {showPw ? "🙈" : "👁️"}
+                  </button>
+                </div>
+                <p className="text-xs t-muted">
+                  다음 로그인 때 사용해요. 잘 기억해주세요!
+                </p>
               </div>
 
               <label
@@ -390,7 +445,7 @@ function LoginForm() {
 
               <button
                 type="submit"
-                disabled={loading || !agreed}
+                disabled={loading || !agreed || password.length < 8}
                 className="chosun-btn chosun-title w-full mb-2"
                 style={{
                   padding: "14px 0",
@@ -399,12 +454,13 @@ function LoginForm() {
                   letterSpacing: "0.04em",
                 }}
               >
-                {loading ? "전송 중..." : "인증 메일 받기 ✉️"}
+                {loading ? "전송 중..." : "인증 코드 받기 ✉️"}
               </button>
               <button
                 type="button"
                 onClick={() => {
                   setStep("email");
+                  setPassword("");
                   setError("");
                 }}
                 className="w-full text-sm t-muted py-2"
@@ -421,7 +477,7 @@ function LoginForm() {
               className="font-medium"
               style={{ color: "var(--chosun-vermillion)" }}
             >
-              인연 찾기
+              인연 맺기
             </span>{" "}
             이용약관에 동의한 것으로 간주돼요
           </p>
