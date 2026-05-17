@@ -139,7 +139,7 @@ export default function LandingPage() {
               className="font-bold t-text chosun-title"
               style={{ fontSize: 20 }}
             >
-              인연 찾기
+              인연 맺기
             </span>
           </div>
           <button
@@ -469,7 +469,7 @@ export default function LandingPage() {
             className="text-xs t-muted"
             style={{ fontFamily: "'Nanum Myeongjo', serif" }}
           >
-            © 2026 인연 찾기 ·
+            © 2026 인연 맺기 ·
           </p>
         </footer>
       </div>

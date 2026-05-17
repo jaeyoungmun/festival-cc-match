@@ -127,7 +127,7 @@ function LoginForm() {
               className="font-bold t-text chosun-title"
               style={{ fontSize: "1.8rem", letterSpacing: "-0.01em" }}
             >
-              인연 찾기
+              인연 맺기
             </h1>
             <p className="text-sm t-sub mt-2">
               {step === "email" && "상명대 학번으로 시작해요"}
@@ -307,7 +307,7 @@ function LoginForm() {
                     처음 오셨군요!
                   </p>
                   <p className="text-xs t-sub mt-0.5">
-                    이메일 인증 후 비밀번호를 설정해요
+                    이메일로 6자리 인증 코드를 보내드려요
                   </p>
                 </div>
               </div>
@@ -399,7 +399,7 @@ function LoginForm() {
                   letterSpacing: "0.04em",
                 }}
               >
-                {loading ? "전송 중..." : "인증 메일 받기 ✉️"}
+                {loading ? "전송 중..." : "인증 코드 받기 ✉️"}
               </button>
               <button
                 type="button"
@@ -421,7 +421,7 @@ function LoginForm() {
               className="font-medium"
               style={{ color: "var(--chosun-vermillion)" }}
             >
-              인연 찾기
+              인연 맺기
             </span>{" "}
             이용약관에 동의한 것으로 간주돼요
           </p>

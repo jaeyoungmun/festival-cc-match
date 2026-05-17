@@ -131,7 +131,7 @@ export default function FeedPage() {
                 className="font-bold t-accent-text chosun-title"
                 style={{ fontSize: "1.4rem", letterSpacing: "-0.01em" }}
               >
-                인연 찾기
+                인연 맺기
               </h1>
             </div>
             <button

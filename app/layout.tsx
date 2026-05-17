@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import "./globals.css";
 
-const SITE_NAME = "인연 찾기";
-const SITE_DESCRIPTION = "컴퓨터과학전공 부스에서 운영하는 시그널 [인연 찾기]";
+const SITE_NAME = "인연 맺기";
+const SITE_DESCRIPTION = "컴퓨터과학전공 부스에서 운영하는 시그널 [인연 맺기]";
 const SITE_URL = "https://smu-signal.com";
 
 export const metadata: Metadata = {
