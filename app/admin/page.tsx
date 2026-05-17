@@ -70,12 +70,19 @@ export default function AdminPage() {
       >
         {/* 헤더 */}
         <header className="px-6 pt-9 pb-5 flex items-center gap-3">
-          <div
+          <button
+            type="button"
+            onClick={() => router.push("/")}
             className="chosun-seal chosun-han"
-            style={{ width: 44, height: 44, fontSize: 22 }}
+            style={{
+              width: 44,
+              height: 44,
+              fontSize: 22,
+              cursor: "pointer",
+            }}
           >
             管
-          </div>
+          </button>
           <div>
             <h1
               className="font-bold t-text chosun-title"

@@ -85,12 +85,19 @@ export default function ChooseCharacterPage() {
       >
         <div className="w-full" style={{ maxWidth: 360 }}>
           <div className="text-center mb-8 anim-fade-up">
-            <div
+            <button
+              type="button"
+              onClick={() => router.push("/")}
               className="chosun-seal mx-auto mb-4 chosun-han"
-              style={{ width: 56, height: 56, fontSize: 28 }}
+              style={{
+                width: 56,
+                height: 56,
+                fontSize: 28,
+                cursor: "pointer",
+              }}
             >
               選
-            </div>
+            </button>
             <h1
               className="font-bold t-text chosun-title"
               style={{ fontSize: "1.6rem", letterSpacing: "-0.01em" }}

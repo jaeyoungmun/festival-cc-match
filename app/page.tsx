@@ -159,12 +159,19 @@ export default function LandingPage() {
         <section className="px-6 pt-8 pb-12 text-center">
           {/* 도장 한자 */}
           <div className="flex justify-center mb-7">
-            <div
+            <button
+              type="button"
+              onClick={() => router.push("/")}
               className="anim-fade-up chosun-seal"
-              style={{ width: 64, height: 64, fontSize: 38 }}
+              style={{
+                width: 64,
+                height: 64,
+                fontSize: 38,
+                cursor: "pointer",
+              }}
             >
               緣
-            </div>
+            </button>
           </div>
 
           {/* 부제 뱃지 */}

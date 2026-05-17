@@ -55,10 +55,9 @@ export async function POST(request: NextRequest) {
   }
 
   // 3. 뽑을 사람이 있음 → 이제 차감
-  const { data: remaining, error: balanceError } = await svc.rpc(
-    "decrement_reroll_balance",
-    { p_user_id: user.id },
-  );
+  const { error: balanceError } = await svc.rpc("decrement_reroll_balance", {
+    p_user_id: user.id,
+  });
 
   if (balanceError) {
     if (balanceError.message?.includes("NO_REROLLS_LEFT")) {
@@ -70,6 +69,14 @@ export async function POST(request: NextRequest) {
     console.error("[feed/reroll] balance error:", balanceError);
     return NextResponse.json({ error: "서버 오류" }, { status: 500 });
   }
+
+  // 차감 후의 잔액을 명시적으로 다시 조회 (RPC 반환 타입에 의존하지 않도록).
+  const { data: balanceRow } = await svc
+    .from("reroll_balance")
+    .select("balance")
+    .eq("user_id", user.id)
+    .maybeSingle();
+  const remaining = balanceRow?.balance ?? 0;
 
   // 4. 새 카드를 seen으로 마킹 (가장 최근 seen = 현재 카드)
   await supabase
