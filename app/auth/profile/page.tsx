@@ -13,6 +13,7 @@ function ProfileForm() {
 
   const [password, setPassword] = useState("");
   const [passwordConfirm, setPasswordConfirm] = useState("");
+  const [name, setName] = useState("");
   const [instagramId, setInstagramId] = useState("");
   const [gender, setGender] = useState<"male" | "female" | "">("");
   const [character, setCharacter] = useState<CharacterName | "">("");
@@ -34,6 +35,10 @@ function ProfileForm() {
     }
     if (password !== passwordConfirm) {
       setError("비밀번호가 일치하지 않습니다");
+      return;
+    }
+    if (!name.trim()) {
+      setError("이름을 입력해주세요");
       return;
     }
     if (!instagramId) {
@@ -63,6 +68,7 @@ function ProfileForm() {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
+        name: name.trim(),
         instagram_id: instagramId,
         gender,
         character,
@@ -83,6 +89,7 @@ function ProfileForm() {
   const ready =
     password.length >= 8 &&
     password === passwordConfirm &&
+    !!name.trim() &&
     !!instagramId &&
     !!gender &&
     !!character;
@@ -181,6 +188,29 @@ function ProfileForm() {
 
             {/* 구분선 */}
             <div className="chosun-divider mb-5" />
+
+            {/* 이름 */}
+            <div className="space-y-2 mb-5">
+              <Label className="t-text text-sm font-medium chosun-title">
+                이름{" "}
+                <span style={{ color: "var(--chosun-vermillion)" }}>*</span>
+              </Label>
+              <Input
+                type="text"
+                placeholder="홍길동"
+                value={name}
+                onChange={(e) => {
+                  setName(e.target.value);
+                  setError("");
+                }}
+                maxLength={20}
+                className="rounded-xl bg-transparent t-text h-12"
+                style={{ border: "1.5px solid var(--border-accent)" }}
+              />
+              <p className="text-xs t-muted">
+                실제 이름을 입력해주세요 (최대 20자)
+              </p>
+            </div>
 
             {/* 인스타 ID */}
             <div className="space-y-2 mb-5">

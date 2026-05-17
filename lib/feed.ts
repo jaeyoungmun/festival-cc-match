@@ -8,6 +8,7 @@ export type FeedCandidate = {
   id: string;
   instagram_id: string;
   character: CharacterName;
+  name: string | null;
 };
 
 // 다음 카드를 한 장 뽑아 반환. 없으면 null.
@@ -69,7 +70,7 @@ export async function pickNextProfile(
 
   let query = supabase
     .from("profiles")
-    .select("id, instagram_id, character")
+    .select("id, instagram_id, character, name")
     .eq("gender", oppositeGender(viewer.gender))
     .neq("id", viewerId)
     .not("character", "is", null)

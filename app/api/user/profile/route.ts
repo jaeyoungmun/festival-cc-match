@@ -34,13 +34,14 @@ async function upsertProfile(request: NextRequest, mode: "insert" | "update") {
     is_visible,
     character,
     character_preference,
+    name,
   } = body ?? {};
 
   // 최초 생성 시 필수값 검증
   if (mode === "insert") {
-    if (!instagram_id || !gender || !character) {
+    if (!instagram_id || !gender || !character || !name) {
       return NextResponse.json(
-        { error: "instagram_id, gender, character는 필수입니다" },
+        { error: "name, instagram_id, gender, character는 필수입니다" },
         { status: 400 },
       );
     }
@@ -60,14 +61,24 @@ async function upsertProfile(request: NextRequest, mode: "insert" | "update") {
 
   // instagram_id 공백 제거
   const cleanId = instagram_id?.trim().replace(/^@/, "");
+  // 이름은 양옆 공백만 제거 (중간 공백은 허용 — 외국인 학생 등 대비).
+  const cleanName =
+    typeof name === "string" ? name.trim().slice(0, 20) : undefined;
 
   if (mode === "insert") {
+    if (!cleanName) {
+      return NextResponse.json(
+        { error: "이름을 입력해주세요" },
+        { status: 400 },
+      );
+    }
     const { error } = await supabase.from("profiles").insert({
       id: user.id,
       email: user.email!,
       instagram_id: cleanId,
       gender,
       character,
+      name: cleanName,
       consent_agreed: true,
     });
     if (error) {
@@ -85,6 +96,15 @@ async function upsertProfile(request: NextRequest, mode: "insert" | "update") {
     const updates: Record<string, unknown> = {};
     if (cleanId !== undefined) updates.instagram_id = cleanId;
     if (is_visible !== undefined) updates.is_visible = is_visible;
+    if (cleanName !== undefined) {
+      if (cleanName.length === 0) {
+        return NextResponse.json(
+          { error: "이름은 비울 수 없어요" },
+          { status: 400 },
+        );
+      }
+      updates.name = cleanName;
+    }
 
     // character / character_preference는 본인 gender 기반 검증이 필요하므로
     // 둘 중 하나라도 들어오면 기존 프로필을 한 번만 조회한다.

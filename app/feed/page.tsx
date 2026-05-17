@@ -13,30 +13,6 @@ type Profile = {
 
 type FeedState = "loading" | "card" | "empty" | "error" | "no_rerolls";
 
-// 이름은 아직 서버에서 안 내려오므로 id 해시 mock 유지 (추후 DB에 추가되면 교체)
-const MOCK_NAMES = [
-  "김도윤",
-  "이서연",
-  "박지호",
-  "최민서",
-  "정유진",
-  "강예준",
-  "윤하윤",
-  "장수아",
-  "한지후",
-  "오나윤",
-  "조태민",
-  "서아린",
-];
-function hash(s: string) {
-  let h = 0;
-  for (const c of s) h = (h * 31 + c.charCodeAt(0)) | 0;
-  return Math.abs(h);
-}
-function pickName(id: string) {
-  return MOCK_NAMES[hash(id + "n") % MOCK_NAMES.length];
-}
-
 export default function FeedPage() {
   const router = useRouter();
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -120,7 +96,7 @@ export default function FeedPage() {
   }
 
   const character = profile ? (profile.character ?? null) : null;
-  const displayName = profile ? (profile.name ?? pickName(profile.id)) : "";
+  const displayName = profile?.name?.trim() || "";
 
   return (
     <main className="min-h-screen t-page chosun-body">
@@ -284,18 +260,20 @@ export default function FeedPage() {
                     </div>
                   </div>
 
-                  {/* 이름 */}
-                  <div className="text-center mb-2">
-                    <p
-                      className="t-text chosun-title"
-                      style={{
-                        fontSize: "1.5rem",
-                        letterSpacing: "0.02em",
-                      }}
-                    >
-                      {displayName}
-                    </p>
-                  </div>
+                  {/* 이름 — 아직 입력 안 한 기존 유저는 비워둠 */}
+                  {displayName && (
+                    <div className="text-center mb-2">
+                      <p
+                        className="t-text chosun-title"
+                        style={{
+                          fontSize: "1.5rem",
+                          letterSpacing: "0.02em",
+                        }}
+                      >
+                        {displayName}
+                      </p>
+                    </div>
+                  )}
 
                   {/* 캐릭터 멘트 */}
                   <p

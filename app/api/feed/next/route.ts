@@ -43,7 +43,7 @@ export async function GET() {
   if (lastSeen?.target_id) {
     const { data: currentProfile } = await svc
       .from("profiles")
-      .select("id, instagram_id, character")
+      .select("id, instagram_id, character, name")
       .eq("id", lastSeen.target_id)
       .maybeSingle();
 

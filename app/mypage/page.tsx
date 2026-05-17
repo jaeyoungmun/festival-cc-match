@@ -19,6 +19,7 @@ type Profile = {
   email: string;
   character: CharacterName | null;
   character_preference: CharacterName | null;
+  name: string | null;
 };
 
 type Section = "main" | "edit" | "delete-confirm";
@@ -33,6 +34,7 @@ export default function MyPage() {
   const [error, setError] = useState("");
   const [loadError, setLoadError] = useState("");
 
+  const [editName, setEditName] = useState("");
   const [editInsta, setEditInsta] = useState("");
   const [editCharacter, setEditCharacter] = useState<CharacterName | "">("");
   // null = "둘다" (필터 없음).
@@ -57,6 +59,7 @@ export default function MyPage() {
       if (profileRes.ok) {
         const p = await profileRes.json();
         setProfile(p);
+        setEditName(p.name ?? "");
         setEditInsta(p.instagram_id);
         setEditCharacter(p.character ?? "");
         setEditPref(p.character_preference ?? null);
@@ -77,6 +80,11 @@ export default function MyPage() {
 
   async function handleSaveEdit(e: React.FormEvent) {
     e.preventDefault();
+    const trimmedName = editName.trim();
+    if (!trimmedName) {
+      setError("이름을 입력해주세요");
+      return;
+    }
     if (!editInsta.trim()) {
       setError("인스타 ID를 입력해주세요");
       return;
@@ -91,6 +99,7 @@ export default function MyPage() {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
+        name: trimmedName,
         instagram_id: editInsta,
         character: editCharacter,
         character_preference: editPref,
@@ -106,6 +115,7 @@ export default function MyPage() {
       p
         ? {
             ...p,
+            name: trimmedName,
             instagram_id: editInsta,
             character: editCharacter,
             character_preference: editPref,
@@ -249,9 +259,23 @@ export default function MyPage() {
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
+                    {profile.name && (
+                      <p
+                        className="font-bold t-text truncate chosun-title"
+                        style={{
+                          fontSize: "1.3rem",
+                          letterSpacing: "-0.01em",
+                        }}
+                      >
+                        {profile.name}
+                      </p>
+                    )}
                     <p
-                      className="font-bold t-accent-text truncate chosun-title"
-                      style={{ fontSize: "1.3rem", letterSpacing: "-0.01em" }}
+                      className="font-medium t-accent-text truncate chosun-title"
+                      style={{
+                        fontSize: profile.name ? "0.95rem" : "1.3rem",
+                        letterSpacing: "-0.01em",
+                      }}
                     >
                       @{profile.instagram_id}
                     </p>
@@ -454,6 +478,27 @@ export default function MyPage() {
               className="chosun-bordered"
               style={{ padding: 22, borderRadius: 18 }}
             >
+              {/* 이름 */}
+              <div className="space-y-2 mb-5">
+                <Label
+                  htmlFor="edit-name"
+                  className="t-text text-sm font-medium chosun-title"
+                >
+                  이름
+                </Label>
+                <Input
+                  id="edit-name"
+                  type="text"
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                  placeholder="홍길동"
+                  maxLength={20}
+                  className="rounded-xl bg-transparent t-text h-12"
+                  style={{ border: "1.5px solid var(--border-accent)" }}
+                />
+                <p className="text-xs t-muted">최대 20자</p>
+              </div>
+
               <div className="space-y-2 mb-5">
                 <Label
                   htmlFor="edit-insta"
