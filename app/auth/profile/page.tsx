@@ -2,24 +2,19 @@
 
 import { useState, Suspense } from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { charactersByGender, type CharacterName } from "@/lib/characters";
 
 function ProfileForm() {
   const router = useRouter();
-  const supabase = createClient();
 
-  const [password, setPassword] = useState("");
-  const [passwordConfirm, setPasswordConfirm] = useState("");
   const [name, setName] = useState("");
   const [instagramId, setInstagramId] = useState("");
   const [gender, setGender] = useState<"male" | "female" | "">("");
   const [character, setCharacter] = useState<CharacterName | "">("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [showPw, setShowPw] = useState(false);
 
   // 성별 변경 시 캐릭터 초기화 (이성 캐릭터 선택 방지)
   function handleGenderChange(g: "male" | "female") {
@@ -29,14 +24,6 @@ function ProfileForm() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (password.length < 8) {
-      setError("비밀번호는 8자 이상이어야 합니다");
-      return;
-    }
-    if (password !== passwordConfirm) {
-      setError("비밀번호가 일치하지 않습니다");
-      return;
-    }
     if (!name.trim()) {
       setError("이름을 입력해주세요");
       return;
@@ -57,13 +44,7 @@ function ProfileForm() {
     setLoading(true);
     setError("");
 
-    const { error: pwError } = await supabase.auth.updateUser({ password });
-    if (pwError) {
-      setLoading(false);
-      setError("비밀번호 설정에 실패했습니다");
-      return;
-    }
-
+    // 비밀번호는 가입 단계에서 이미 설정됨 — 여기선 프로필만 저장.
     const res = await fetch("/api/user/profile", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -89,12 +70,7 @@ function ProfileForm() {
   }
 
   const ready =
-    password.length >= 8 &&
-    password === passwordConfirm &&
-    !!name.trim() &&
-    !!instagramId &&
-    !!gender &&
-    !!character;
+    !!name.trim() && !!instagramId && !!gender && !!character;
 
   return (
     <main className="min-h-screen t-page relative overflow-hidden chosun-body">
@@ -141,63 +117,6 @@ function ProfileForm() {
             className="chosun-bordered anim-fade-up anim-delay-1"
             style={{ padding: 22, borderRadius: 18 }}
           >
-            {/* 비밀번호 */}
-            <div className="space-y-2 mb-5">
-              <Label className="t-text text-sm font-medium chosun-title">
-                비밀번호 설정{" "}
-                <span style={{ color: "var(--chosun-vermillion)" }}>*</span>
-              </Label>
-              <div className="relative">
-                <Input
-                  type={showPw ? "text" : "password"}
-                  placeholder="8자 이상"
-                  value={password}
-                  onChange={(e) => {
-                    setPassword(e.target.value);
-                    setError("");
-                  }}
-                  className="rounded-xl bg-transparent t-text h-12 pr-12"
-                  style={{ border: "1.5px solid var(--border-accent)" }}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPw((v) => !v)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-lg"
-                  style={{ cursor: "pointer" }}
-                >
-                  {showPw ? "🙈" : "👁️"}
-                </button>
-              </div>
-              <Input
-                type={showPw ? "text" : "password"}
-                placeholder="비밀번호 확인"
-                value={passwordConfirm}
-                onChange={(e) => {
-                  setPasswordConfirm(e.target.value);
-                  setError("");
-                }}
-                className="rounded-xl bg-transparent t-text h-12"
-                style={{
-                  border: `1.5px solid ${
-                    passwordConfirm && password !== passwordConfirm
-                      ? "var(--chosun-vermillion)"
-                      : "var(--border-accent)"
-                  }`,
-                }}
-              />
-              {passwordConfirm && password !== passwordConfirm && (
-                <p
-                  className="text-xs"
-                  style={{ color: "var(--chosun-vermillion)" }}
-                >
-                  비밀번호가 일치하지 않아요
-                </p>
-              )}
-            </div>
-
-            {/* 구분선 */}
-            <div className="chosun-divider mb-5" />
-
             {/* 이름 */}
             <div className="space-y-2 mb-5">
               <Label className="t-text text-sm font-medium chosun-title">
