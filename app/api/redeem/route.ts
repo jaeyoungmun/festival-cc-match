@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient, createServiceClient } from "@/lib/supabase/server";
 import { normalizePinCode } from "@/lib/admin";
+import { isEventOpen } from "@/lib/eventGate";
 
 // POST /api/redeem
 // Body: { code: string }
@@ -9,6 +10,13 @@ import { normalizePinCode } from "@/lib/admin";
 //   - 공유 PIN: redemption_code_uses(code, user_id) PK로 유저당 1회만 가능
 // Response: { rolls: number, balance: number } | { error, code }
 export async function POST(request: NextRequest) {
+  if (!isEventOpen()) {
+    return NextResponse.json(
+      { error: "본 행사 시작 전이에요", code: "BEFORE_OPEN" },
+      { status: 403 },
+    );
+  }
+
   const supabase = await createClient();
 
   const {
