@@ -12,6 +12,7 @@ import {
   type CharacterName,
   type Gender,
 } from "@/lib/characters";
+import { isEventOpen } from "@/lib/eventGate";
 
 type Profile = {
   instagram_id: string;
@@ -39,6 +40,14 @@ export default function MyPage() {
   const [editCharacter, setEditCharacter] = useState<CharacterName | "">("");
   // null = "둘다" (필터 없음).
   const [editPref, setEditPref] = useState<CharacterName | null>(null);
+
+  // 본 행사 오픈 여부 — 마운트 후 계산해서 hydration 불일치 방지.
+  // 초기 null인 동안엔 안전하게 "미오픈"으로 가정해서 충전 UI를 숨긴다.
+  const [open, setOpen] = useState<boolean | null>(null);
+  useEffect(() => {
+    setOpen(isEventOpen());
+  }, []);
+  const isOpen = open === true;
 
   useEffect(() => {
     async function load() {
@@ -162,7 +171,9 @@ export default function MyPage() {
         <header className="flex items-center gap-3 px-6 pt-9 pb-5">
           <button
             onClick={() =>
-              section === "main" ? router.push("/feed") : setSection("main")
+              section === "main"
+                ? router.push(isOpen ? "/feed" : "/")
+                : setSection("main")
             }
             className="chosun-btn-outline flex items-center justify-center"
             style={{
@@ -328,38 +339,49 @@ export default function MyPage() {
                     >
                       {balance}장
                     </span>
-                    <button
-                      onClick={() => router.push("/redeem")}
-                      className="chosun-btn chosun-title"
-                      style={{
-                        fontSize: 12,
-                        padding: "5px 14px",
-                        borderRadius: 999,
-                        letterSpacing: "0.04em",
-                      }}
-                    >
-                      충전
-                    </button>
+                    {isOpen && (
+                      <button
+                        onClick={() => router.push("/redeem")}
+                        className="chosun-btn chosun-title"
+                        style={{
+                          fontSize: 12,
+                          padding: "5px 14px",
+                          borderRadius: 999,
+                          letterSpacing: "0.04em",
+                        }}
+                      >
+                        충전
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* 메뉴 */}
-            {[
-              {
-                icon: "✏️",
-                label: "프로필 수정",
-                sub: "인스타 ID 변경",
-                action: () => setSection("edit"),
-              },
-              {
-                icon: "🪙",
-                label: "뽑기권 충전",
-                sub: "부스에서 받은 코드 입력",
-                action: () => router.push("/redeem"),
-              },
-            ].map((item, i) => (
+            {/* 메뉴 — 충전은 본 행사 오픈 후에만 노출 */}
+            {(
+              [
+                {
+                  icon: "✏️",
+                  label: "프로필 수정",
+                  sub: "인스타 ID 변경",
+                  action: () => setSection("edit"),
+                },
+                isOpen
+                  ? {
+                      icon: "🪙",
+                      label: "뽑기권 충전",
+                      sub: "부스에서 받은 코드 입력",
+                      action: () => router.push("/redeem"),
+                    }
+                  : null,
+              ].filter(Boolean) as {
+                icon: string;
+                label: string;
+                sub: string;
+                action: () => void;
+              }[]
+            ).map((item, i) => (
               <button
                 key={i}
                 onClick={item.action}
