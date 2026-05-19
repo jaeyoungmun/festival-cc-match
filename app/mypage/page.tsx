@@ -416,6 +416,42 @@ export default function MyPage() {
               </button>
             ))}
 
+            {/* 개발자에게 문의 — 카카오톡 오픈채팅 (같은 창에서 전환) */}
+            <a
+              href="https://open.kakao.com/o/snfRewvi"
+              className="chosun-bordered chosun-card-hover w-full flex items-center gap-4 text-left"
+              style={{
+                padding: "18px 20px",
+                borderRadius: 14,
+                cursor: "pointer",
+                textDecoration: "none",
+              }}
+            >
+              <div
+                className="flex items-center justify-center text-xl flex-shrink-0"
+                style={{
+                  width: 44,
+                  height: 44,
+                  borderRadius: 10,
+                  background: "var(--accent-soft)",
+                  border: "1.5px solid var(--border-accent)",
+                }}
+              >
+                💬
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-semibold t-text chosun-title">
+                  개발자에게 문의
+                </p>
+                <p className="text-xs t-muted mt-0.5">
+                  카카오톡 오픈채팅으로 연결돼요
+                </p>
+              </div>
+              <span className="t-muted" style={{ fontSize: 18 }}>
+                ›
+              </span>
+            </a>
+
             {/* 로그아웃 / 탈퇴 */}
             <div
               className="chosun-bordered overflow-hidden"
