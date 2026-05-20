@@ -324,7 +324,7 @@ function LoginForm() {
                     처음 오셨군요!
                   </p>
                   <p className="text-xs t-sub mt-0.5">
-                    이메일로 6자리 인증 코드를 보내드려요
+                    이메일로 8자리 인증 코드를 보내드려요
                   </p>
                 </div>
               </div>
