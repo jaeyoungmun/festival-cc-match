@@ -34,6 +34,19 @@ const STEPS = [
   },
 ];
 
+const NOTICES: { icon: string; title: string; body: string }[] = [
+  {
+    icon: "⚠️",
+    title: "비공개 인스타그램 계정은 삭제돼요",
+    body: "다른 사용자가 내 계정을 볼 수 있도록 반드시 공개 계정으로 설정해주세요. 비공개 계정으로 가입된 경우 운영진 확인 후 삭제될 수 있어요.",
+  },
+  {
+    icon: "📘",
+    title: "회원가입 방법 안내",
+    body: "학번 입력 → 비밀번호 설정 → 이메일로 받은 8자리 코드 입력 → 프로필(이름·인스타·캐릭터) 작성 순서로 진행돼요.",
+  },
+];
+
 type Stats = {
   count: number;
   next: { threshold: number; rolls: number; remaining: number } | null;
@@ -44,6 +57,7 @@ export default function LandingPage() {
   const router = useRouter();
   const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
   const [stats, setStats] = useState<Stats | null>(null);
+  const [noticeOpen, setNoticeOpen] = useState(false);
   // SSR/CSR 시간차로 인한 hydration 불일치를 피하려고 마운트 후에만 계산한다.
   const [open, setOpen] = useState<boolean | null>(null);
   const [remaining, setRemaining] = useState<ReturnType<
@@ -250,6 +264,100 @@ export default function LandingPage() {
               <p className="text-xs t-muted">
                 학번(@sangmyung.kr)으로 가입 가능해요
               </p>
+            )}
+          </div>
+        </section>
+
+        {/* 공지사항 — 아코디언 */}
+        <section className="px-6 pb-4 anim-fade-up anim-delay-3">
+          <div
+            className="chosun-bordered overflow-hidden"
+            style={{ borderRadius: 14, margin: 8 }}
+          >
+            <button
+              type="button"
+              onClick={() => setNoticeOpen((v) => !v)}
+              aria-expanded={noticeOpen}
+              className="w-full flex items-center justify-between"
+              style={{
+                padding: "14px 18px",
+                cursor: "pointer",
+                background: "transparent",
+              }}
+            >
+              <div className="flex items-center gap-2 min-w-0 flex-1">
+                <span
+                  className="chosun-han flex items-center justify-center flex-shrink-0"
+                  style={{
+                    width: 28,
+                    height: 28,
+                    borderRadius: 6,
+                    background: "var(--accent-soft)",
+                    border: "1.5px solid var(--border-accent)",
+                    color: "var(--chosun-vermillion)",
+                    fontSize: 16,
+                  }}
+                >
+                  告
+                </span>
+                <span
+                  className="text-sm font-semibold t-text chosun-title truncate"
+                  style={{ letterSpacing: "-0.01em" }}
+                >
+                  {NOTICES[0]?.title}
+                </span>
+              </div>
+              <div className="flex items-center gap-2 flex-shrink-0">
+                {NOTICES.length > 1 && (
+                  <span className="text-xs t-muted">
+                    외 {NOTICES.length - 1}건
+                  </span>
+                )}
+                <span
+                  className="t-muted"
+                  style={{
+                    fontSize: 16,
+                    transition: "transform 0.2s ease",
+                    transform: noticeOpen ? "rotate(180deg)" : "rotate(0deg)",
+                    display: "inline-block",
+                  }}
+                >
+                  ⌄
+                </span>
+              </div>
+            </button>
+
+            {noticeOpen && (
+              <div
+                className="space-y-3 anim-fade-up"
+                style={{
+                  padding: "0 18px 16px",
+                  borderTop: "1px solid var(--border)",
+                  paddingTop: 14,
+                }}
+              >
+                {NOTICES.map((n, i) => (
+                  <div key={i} className="flex gap-3">
+                    <span
+                      className="flex-shrink-0"
+                      style={{ fontSize: 18, lineHeight: "20px", marginTop: 1 }}
+                    >
+                      {n.icon}
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold t-text chosun-title">
+                        {n.title}
+                      </p>
+                      <p
+                        className="text-xs t-sub mt-1 leading-relaxed"
+                        style={{ wordBreak: "keep-all" }}
+                      >
+                        {n.body}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
             )}
           </div>
         </section>
