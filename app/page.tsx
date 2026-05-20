@@ -34,16 +34,30 @@ const STEPS = [
   },
 ];
 
-const NOTICES: { icon: string; title: string; body: string }[] = [
+const NOTICES: {
+  icon: string;
+  title: string;
+  body: string;
+  link?: { href: string; label: string };
+}[] = [
   {
     icon: "⚠️",
     title: "비공개 인스타그램 계정은 삭제돼요",
-    body: "다른 사용자가 내 계정을 볼 수 있도록 반드시 공개 계정으로 설정해주세요. 비공개 계정으로 가입된 경우 운영진 확인 후 삭제될 수 있어요.",
+    body: "다른 사용자가 내 계정을 볼 수 있도록 공개 계정으로 설정해주세요. 비공개 계정으로 가입된 경우 운영진 확인 후 삭제될 수 있어요. 공개계정으로 변경 후 다시 가입부탁드려요",
   },
   {
     icon: "📘",
     title: "회원가입 방법 안내",
-    body: "학번 입력 → 비밀번호 설정 → 이메일로 받은 8자리 코드 입력 → 프로필(이름·인스타·캐릭터) 작성 순서로 진행돼요.",
+    body: "샘물 -> office365/웹메일 -> outlook(정크메일 확인) -> 인증번호 입력 순서로 가입이 가능합니다.",
+  },
+  {
+    icon: "😶",
+    title: "Outlook에서 거부된 경우 메일이 수신되지 않을 수 있어요",
+    body: "세번이상 메일이 수신되지 않는다면, 개발자에게 문의 부탁드립니다",
+    link: {
+      href: "https://open.kakao.com/o/snfRewvi",
+      label: "카카오톡 오픈채팅으로 문의하기 →",
+    },
   },
 ];
 
@@ -354,6 +368,19 @@ export default function LandingPage() {
                       >
                         {n.body}
                       </p>
+                      {n.link && (
+                        <a
+                          href={n.link.href}
+                          className="inline-flex items-center text-xs font-semibold chosun-title mt-2"
+                          style={{
+                            color: "var(--chosun-vermillion)",
+                            textDecoration: "underline",
+                            textUnderlineOffset: 3,
+                          }}
+                        >
+                          {n.link.label}
+                        </a>
+                      )}
                     </div>
                   </div>
                 ))}
