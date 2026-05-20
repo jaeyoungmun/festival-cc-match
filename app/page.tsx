@@ -111,11 +111,7 @@ export default function LandingPage() {
   // 오픈 전엔 /feed로 보내봤자 proxy가 다시 /로 돌리므로 /mypage로 안내.
   // open이 null(첫 렌더)인 동안엔 안전하게 오픈 전으로 가정.
   const isOpen = open === true;
-  const startHref = loggedIn
-    ? isOpen
-      ? "/feed"
-      : "/mypage"
-    : "/auth/signup";
+  const startHref = loggedIn ? (isOpen ? "/feed" : "/mypage") : "/auth/signup";
   const startLabel = loggedIn
     ? isOpen
       ? "피드로 이동 →"
@@ -311,7 +307,7 @@ export default function LandingPage() {
         )}
 
         {/* 가입자 카운터 + 마일스톤 보상 진행률 */}
-        {/* {stats && (
+        {stats && (
           <section className="px-6 pb-4 anim-fade-up anim-delay-4">
             <div
               className="chosun-bordered"
@@ -328,10 +324,10 @@ export default function LandingPage() {
                   {stats.count}
                   <span className="t-muted text-xs ml-0.5">명</span>
                 </p>
-              </div> */}
+              </div>
 
-        {/* 진행률 바 */}
-        {/* {stats.next && (
+              {/* 진행률 바 */}
+              {stats.next && (
                 <>
                   <div
                     className="relative w-full mb-2"
@@ -375,12 +371,12 @@ export default function LandingPage() {
               )}
               {!stats.next && (
                 <p className="text-xs t-sub mb-3">
-                  모든 마일스톤을 달성했어요! 🎉
+                  모든 가입자 수 보상을 달성했어요! 🎉
                 </p>
-              )} */}
+              )}
 
-        {/* 마일스톤 뱃지 */}
-        {/* <div className="flex gap-1.5">
+              {/* 마일스톤 뱃지 */}
+              <div className="flex gap-1.5">
                 {stats.milestones.map((m) => (
                   <div
                     key={m.threshold}
@@ -409,7 +405,7 @@ export default function LandingPage() {
               </div>
             </div>
           </section>
-        )} */}
+        )}
         {/* 구분선 */}
         <div
           className="anim-fade-up anim-delay-4 chosun-divider"
