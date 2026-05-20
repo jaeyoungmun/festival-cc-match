@@ -34,6 +34,38 @@ const STEPS = [
   },
 ];
 
+const NOTICES: {
+  icon: string;
+  title: string;
+  body: string;
+  link?: { href: string; label: string };
+}[] = [
+  {
+    icon: "📢",
+    title: "가입만 해도 뽑기권 증정!",
+    body: "사전가입(20일까지)만 해도 뽑기권 2장을 드려요. 오픈 후 바로 인연을 만나보세요!",
+  },
+  {
+    icon: "📘",
+    title: "회원가입 방법 안내",
+    body: "샘물 -> office365/웹메일 -> outlook(정크메일 확인) -> 인증번호 입력 순서로 가입이 가능합니다.",
+  },
+  {
+    icon: "⚠️",
+    title: "비공개 인스타그램 계정은 삭제돼요",
+    body: "다른 사용자가 내 계정을 볼 수 있도록 공개 계정으로 설정해주세요. 비공개 계정으로 가입된 경우 운영진 확인 후 삭제될 수 있어요. 공개계정으로 변경 후 다시 가입부탁드려요",
+  },
+  {
+    icon: "😶",
+    title: "Outlook에서 거부된 경우 메일이 수신되지 않을 수 있어요",
+    body: "세번이상 메일이 수신되지 않는다면, 개발자에게 문의 부탁드립니다",
+    link: {
+      href: "https://open.kakao.com/o/snfRewvi",
+      label: "카카오톡 오픈채팅으로 문의하기 →",
+    },
+  },
+];
+
 type Stats = {
   count: number;
   next: { threshold: number; rolls: number; remaining: number } | null;
@@ -44,6 +76,7 @@ export default function LandingPage() {
   const router = useRouter();
   const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
   const [stats, setStats] = useState<Stats | null>(null);
+  const [noticeOpen, setNoticeOpen] = useState(false);
   // SSR/CSR 시간차로 인한 hydration 불일치를 피하려고 마운트 후에만 계산한다.
   const [open, setOpen] = useState<boolean | null>(null);
   const [remaining, setRemaining] = useState<ReturnType<
@@ -250,6 +283,113 @@ export default function LandingPage() {
               <p className="text-xs t-muted">
                 학번(@sangmyung.kr)으로 가입 가능해요
               </p>
+            )}
+          </div>
+        </section>
+
+        {/* 공지사항 — 아코디언 */}
+        <section className="px-6 pb-4 anim-fade-up anim-delay-3">
+          <div
+            className="chosun-bordered overflow-hidden"
+            style={{ borderRadius: 14, margin: 8 }}
+          >
+            <button
+              type="button"
+              onClick={() => setNoticeOpen((v) => !v)}
+              aria-expanded={noticeOpen}
+              className="w-full flex items-center justify-between"
+              style={{
+                padding: "14px 18px",
+                cursor: "pointer",
+                background: "transparent",
+              }}
+            >
+              <div className="flex items-center gap-2 min-w-0 flex-1">
+                <span
+                  className="chosun-han flex items-center justify-center flex-shrink-0"
+                  style={{
+                    width: 28,
+                    height: 28,
+                    borderRadius: 6,
+                    background: "var(--accent-soft)",
+                    border: "1.5px solid var(--border-accent)",
+                    color: "var(--chosun-vermillion)",
+                    fontSize: 16,
+                  }}
+                >
+                  告
+                </span>
+                <span
+                  className="text-sm font-semibold t-text chosun-title truncate"
+                  style={{ letterSpacing: "-0.01em" }}
+                >
+                  {NOTICES[0]?.title}
+                </span>
+              </div>
+              <div className="flex items-center gap-2 flex-shrink-0">
+                {NOTICES.length > 1 && (
+                  <span className="text-xs t-muted">
+                    외 {NOTICES.length - 1}건
+                  </span>
+                )}
+                <span
+                  className="t-muted"
+                  style={{
+                    fontSize: 16,
+                    transition: "transform 0.2s ease",
+                    transform: noticeOpen ? "rotate(180deg)" : "rotate(0deg)",
+                    display: "inline-block",
+                  }}
+                >
+                  ⌄
+                </span>
+              </div>
+            </button>
+
+            {noticeOpen && (
+              <div
+                className="space-y-3 anim-fade-up"
+                style={{
+                  padding: "0 18px 16px",
+                  borderTop: "1px solid var(--border)",
+                  paddingTop: 14,
+                }}
+              >
+                {NOTICES.map((n, i) => (
+                  <div key={i} className="flex gap-3">
+                    <span
+                      className="flex-shrink-0"
+                      style={{ fontSize: 18, lineHeight: "20px", marginTop: 1 }}
+                    >
+                      {n.icon}
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold t-text chosun-title">
+                        {n.title}
+                      </p>
+                      <p
+                        className="text-xs t-sub mt-1 leading-relaxed"
+                        style={{ wordBreak: "keep-all" }}
+                      >
+                        {n.body}
+                      </p>
+                      {n.link && (
+                        <a
+                          href={n.link.href}
+                          className="inline-flex items-center text-xs font-semibold chosun-title mt-2"
+                          style={{
+                            color: "var(--chosun-vermillion)",
+                            textDecoration: "underline",
+                            textUnderlineOffset: 3,
+                          }}
+                        >
+                          {n.link.label}
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
             )}
           </div>
         </section>
