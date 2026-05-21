@@ -41,11 +41,6 @@ const NOTICES: {
   link?: { href: string; label: string };
 }[] = [
   {
-    icon: "📢",
-    title: "가입만 해도 뽑기권 증정!",
-    body: "사전가입(20일까지)만 해도 뽑기권 2장을 드려요. 오픈 후 바로 인연을 만나보세요!",
-  },
-  {
     icon: "📘",
     title: "회원가입 방법 안내",
     body: "샘물 -> office365/웹메일 -> outlook(정크메일 확인) -> 인증번호 입력 순서로 가입이 가능합니다.",
@@ -59,6 +54,15 @@ const NOTICES: {
     icon: "😶",
     title: "Outlook에서 거부된 경우 메일이 수신되지 않을 수 있어요",
     body: "세번이상 메일이 수신되지 않는다면, 개발자에게 문의 부탁드립니다",
+    link: {
+      href: "https://open.kakao.com/o/snfRewvi",
+      label: "카카오톡 오픈채팅으로 문의하기 →",
+    },
+  },
+  {
+    icon: "💗",
+    title: "뽑기에서 비공계 계정이 나왔어요",
+    body: "해당 뽑기 카드를 캡쳐해서 개발자에게 보내주세요. 확인 후 뽑기권을 되돌려 드릴게요",
     link: {
       href: "https://open.kakao.com/o/snfRewvi",
       label: "카카오톡 오픈채팅으로 문의하기 →",
