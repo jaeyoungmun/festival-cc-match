@@ -28,12 +28,13 @@ function LoginForm() {
         : "",
   );
 
+  // studentId는 onChange에서 이미 소문자로 정규화되므로 그대로 사용.
   const email = studentId ? `${studentId}@sangmyung.kr` : "";
 
   async function handleEmailNext(e: React.FormEvent) {
     e.preventDefault();
-    if (!/^\d{6,}$/.test(studentId)) {
-      setError("학번을 숫자로 입력해주세요");
+    if (!/^[A-Za-z0-9]{6,}$/.test(studentId)) {
+      setError("학번/계정 ID를 6자 이상 입력해주세요 (영문/숫자)");
       return;
     }
     setLoading(true);
@@ -170,12 +171,16 @@ function LoginForm() {
                 <Input
                   id="studentId"
                   type="text"
-                  inputMode="numeric"
-                  pattern="\d*"
+                  inputMode="text"
+                  pattern="[A-Za-z0-9]*"
                   placeholder="예: 202012345"
                   value={studentId}
                   onChange={(e) => {
-                    setStudentId(e.target.value.replace(/\D/g, ""));
+                    setStudentId(
+                      e.target.value
+                        .replace(/[^A-Za-z0-9]/g, "")
+                        .toLowerCase(),
+                    );
                     setError("");
                   }}
                   className="rounded-xl bg-transparent t-text h-12"

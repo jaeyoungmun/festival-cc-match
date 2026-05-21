@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
 
   // 충돌 가능성에 대비해 약간 여유 있게 생성 후 unique 보장
   const seen = new Set<string>();
-  const rows: { code: string; rolls: number; batch_id: string; created_by: string }[] = [];
+  const rows: Record<string, unknown>[] = [];
   let attempts = 0;
   while (rows.length < count && attempts < count * 3) {
     attempts++;
@@ -53,15 +53,35 @@ export async function POST(request: NextRequest) {
     rows.push({ code: c, rolls, batch_id, created_by: adminId });
   }
 
-  const { data, error } = await svc
-    .from("redemption_codes")
-    .insert(rows)
-    .select("code, rolls");
+  // 컬럼 누락(PGRST204) 시 해당 키를 모든 row에서 제거하고 재시도
+  let attemptInsert = 0;
+  let lastError: unknown = null;
+  while (attemptInsert < 5) {
+    attemptInsert++;
+    const { data, error } = await svc
+      .from("redemption_codes")
+      .insert(rows)
+      .select("code, rolls");
 
-  if (error) {
-    console.error("[admin/codes/batch] insert error:", error);
-    return NextResponse.json({ error: "서버 오류" }, { status: 500 });
+    if (!error) {
+      return NextResponse.json({ codes: data ?? [], batch_id });
+    }
+    lastError = error;
+
+    if (error.code === "PGRST204") {
+      const match = error.message?.match(/'([^']+)' column/);
+      const missingCol = match?.[1];
+      if (missingCol) {
+        rows.forEach((r) => delete r[missingCol]);
+        console.warn(
+          `[admin/codes/batch] dropping missing column "${missingCol}" and retrying`,
+        );
+        continue;
+      }
+    }
+    break;
   }
 
-  return NextResponse.json({ codes: data ?? [], batch_id });
+  console.error("[admin/codes/batch] insert error:", lastError);
+  return NextResponse.json({ error: "서버 오류" }, { status: 500 });
 }
