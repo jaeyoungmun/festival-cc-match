@@ -22,40 +22,55 @@ https://www.smu-signal.com/<br/>https://festival-cc-match.vercel.app/<br/>
 
 ---
 
+## 화면
+
+<p align="center">
+  <img src="public/signal_landing.jpeg" width="200" alt="랜딩" />
+  <img src="public/signal_feed.jpeg" width="200" alt="피드" />
+  <img src="public/signal_mypage.jpeg" width="200" alt="마이페이지" />
+  <img src="public/signal_admin.jpeg" width="200" alt="어드민" />
+</p>
+
+---
 
 ## 기술 스택
 
-| 영역 | 사용 기술 |
-|---|---|
-| Framework | Next.js 16 (App Router) |
-| UI | React 19, Tailwind CSS, shadcn/ui, lucide-react |
+| 영역      | 사용 기술                                                        |
+| --------- | ---------------------------------------------------------------- |
+| Framework | Next.js 16 (App Router)                                          |
+| UI        | React 19, Tailwind CSS, shadcn/ui, lucide-react                  |
 | Auth / DB | Supabase Auth (Confirm Sign Up + password) + PostgreSQL with RLS |
-| Email | Custom SMTP via Resend (도메인 DKIM/SPF 검증 완료) |
-| Hosting | Vercel (cron 포함) |
-| Domain | smu-signal.com (Vercel + DNS) |
+| Email     | Custom SMTP via Resend (도메인 DKIM/SPF 검증 완료)               |
+| Hosting   | Vercel (cron 포함)                                               |
+| Domain    | smu-signal.com (Vercel + DNS)                                    |
 
 ---
 
 ## 아키텍처
 
 ### 1. 매직 링크 → Confirm Sign Up + OTP 전환
+
 초기엔 Supabase `signInWithOtp` (매직 링크 + 토큰) 방식이었으나, **모바일에서 메일 앱이 다른 브라우저를 띄우면 쿠키가 분리돼 신규 유저 안내 루프**에 빠지는 문제가 발생.
 → `signUp({ email, password })` + 8자리 토큰을 입력받는 방식으로 전환. 사용자가 어떤 디바이스/브라우저에서 메일을 보든 코드만 알면 가입이 완료됨.
 
 ### 2. Row Level Security 우회 패턴
+
 `profiles` 테이블은 `auth.uid() = id` 로만 SELECT 가능하도록 RLS가 걸려 있어, **피드용 카드 조회는 service_role 클라이언트로 우회**.
 인증/인가는 라우트 진입 시점에 anon 키 + 쿠키로 검증한 뒤, 데이터 조회만 `createServiceClient()` 로 처리하는 이중 패턴.
 참고: [app/api/feed/next/route.ts](app/api/feed/next/route.ts), [lib/feed.ts](lib/feed.ts)
 
 ### 3. 본 행사 게이트의 이중 방어
+
 proxy (Edge runtime) 와 각 API 라우트 양쪽에서 `isEventOpen()` 검사. 클라이언트 우회 시도가 있어도 API 단에서 막혀 게이트가 무력화되지 않음.
 참고: [lib/eventGate.ts](lib/eventGate.ts), [proxy.ts](proxy.ts)
 
 ### 4. DB 마이그레이션 미적용 케이스 fallback
+
 일부 라우트는 `PGRST204`(누락 컬럼) 발생 시 해당 컬럼만 제거 후 재시도해서 신규 환경에서도 핵심 기능이 동작하도록 처리.
 참고: [app/api/user/profile/route.ts](app/api/user/profile/route.ts), [app/api/admin/codes/shared/route.ts](app/api/admin/codes/shared/route.ts)
 
 ### 5. 충전 코드 사용 트랜잭션
+
 1회용 코드는 `redemption_codes.used_by` 갱신, 공유 코드는 `redemption_code_uses` insert. 잔액 증가 RPC 실패 시 **보상 트랜잭션**으로 코드 사용 흔적을 롤백.
 참고: [app/api/redeem/route.ts](app/api/redeem/route.ts)
 
