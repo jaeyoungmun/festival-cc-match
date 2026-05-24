@@ -23,12 +23,14 @@ https://www.smu-signal.com/<br/>https://festival-cc-match.vercel.app/<br/>
 ---
 
 ## 화면
-
 <p align="center">
-  <img src="public/signal_landing.jpeg" width="200" alt="랜딩" />
-  <img src="public/signal_feed.jpeg" width="200" alt="피드" />
-  <img src="public/signal_mypage.jpeg" width="200" alt="마이페이지" />
-  <img src="public/signal_admin.jpeg" width="200" alt="어드민" />
+  <img src="public/signal_landing1.jpeg" width="200" alt="랜딩1" />
+  <img src="public/signal_landing2.jpeg" width="200" alt="랜딩2" />
+<p/>
+<p align="center">
+  <img src="public/signal_feed.jpeg" width="200" heghit="927" alt="피드" />
+  <img src="public/signal_mypage.jpeg" width="200" heghit="927" alt="마이페이지" />
+  <img src="public/signal_admin.jpeg" width="200" heghit="927" alt="어드민" />
 </p>
 
 ---
